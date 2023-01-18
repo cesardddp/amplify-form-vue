@@ -1,0 +1,89 @@
+<script setup lang="ts">import { FilesDropFieldProps } from '../types';
+
+
+const props = defineProps<FilesDropFieldProps>(
+    // {
+    // name,
+    // fieldSize = 'max',
+    // theme,
+    // label,
+    // required,
+    // multiple,
+    // defaultValue,
+    // text,
+    // fileType,
+    // thumbnailSize,
+    // ...rest
+    // }
+)
+    // const [field, , helpers] = useField({ props.name, multiple });
+
+    // const { setValue } = helpers;
+    // const { value } = field;
+    // const processValue = (files: FileWithSize[]) => {
+    //     multiple ? setValue(files) : setValue(files[0]);
+    // };
+
+
+</script>
+<template>
+    <!-- // TODO esse é complexo, voltar no projeto original .../compoentes/FilesDropInput -->
+    <!-- <fieldset className={`${ theme?.branding=='full' ? borderColorMap.get(theme?.color) : '' } ${fieldSetStyle}`}> -->
+    <!-- <legend className={`${textColorMap.get(theme?.color)} ${legendStyle}`}> -->
+    <legend>
+        {label}
+    </legend>
+    <div className='px-2'>
+        <!-- <FieldWithError props.name={props.name} fieldSize={fieldSize} theme={theme} {...rest}>
+            </FieldWithError> -->
+        <FilesDropInput name={props.name} id={props.name} text={text} multiple={multiple} value={value} theme={theme}
+            required={required} fileType={fileType} thumbnailSize={thumbnailSize} setValue={processValue} {...rest}>
+
+            <section className='container'>
+                <div {...getRootProps({ className: `${ theme?.branding=='full' ? bgLightColorMap.get(theme?.color)
+                    : 'bg-gray-200' } ${ theme?.branding=='full' ? borderColorMap.get(theme?.color) : 'border-gray-600'
+                    } ${ theme?.branding=='full' ? textColorMap.get(theme?.color) : '' } ${instructionsStyle}`, })}>
+                    <input {...getInputProps({ name, title: name, required })} />
+                    <p>{text}</p>
+                </div>
+                <div v-if="files.length">
+                    <div v-if="fileType && fileType.startsWith('image/')">
+                        <!-- TODO pode ser compoente imageThumbs -->
+                        <aside className='flex flex-row flex-wrap mt-4 gap-4'>
+                            {files.map((file, index) => (
+                            <div className='flex min-w-0 overflow-hidden' key={index}>
+                                <img id={index.toString()} src={file.preview!} alt='Preview image of property'
+                                    width={thumbnailSize?.width ?? 120} height={thumbnailSize?.height ?? 80}
+                                    className='block object-cover rounded aspect-square' draggable='true'
+                                    onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver}
+                                    onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDrop={onDropImage} />
+                            </div>
+                            ))}
+                        </aside>
+                    </div>
+                    <div v-else>
+                        <!-- // TODO pode ser compoenetne  -->
+                        <aside className='flex flex-col flex-wrap mt-4 gap-4'>
+                            <!-- {files.map((file, index) => ( -->
+                                <!-- className={`${ theme?.branding=='full' ? textColorMap.get(theme?.color) : '' } text-sm`} -->
+                            <ul >
+                                <li v-for="file,index in files" :key="index">
+                                    <!-- className='font-light' -->
+                                    File: <span>{{file.name}}</span>
+                                </li>
+                            </ul>
+                            ))}
+                        </aside>
+                    </div>
+
+                </div>
+
+
+            </section>
+
+        </FilesDropInput>
+    </div>
+    <!-- </fieldset> -->
+
+
+</template>
