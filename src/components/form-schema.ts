@@ -29,7 +29,7 @@ export const getEnumValues = (
   });
 };
 
-const formSchemaFor = (
+export const formSchemaFor = (
   graphqlJSONSchema: GraphQLJSONSchema2,
   entity: string,
   mutation?: 'create' | 'update',
