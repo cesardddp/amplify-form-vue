@@ -16,6 +16,8 @@ export default defineConfig({
       // into your library
       external: [
         'vue',
+        '@aws-amplify/api',
+        'aws-amplify',
         '@syncfusion/ej2-base',
         '@syncfusion/ej2-data',
         '@syncfusion/ej2-inputs',
@@ -31,18 +33,21 @@ export default defineConfig({
       output: {
         // Provide global variables to use in the UMD build
         // for externalized deps
+        
         globals: {
           vue: 'Vue',
-          '@syncfusion/ej2-base':'@syncfusion/ej2-base',
-          '@syncfusion/ej2-data':'@syncfusion/ej2-data',
-          '@syncfusion/ej2-inputs':'@syncfusion/ej2-inputs',
-          '@syncfusion/ej2-vue-base':'@syncfusion/ej2-vue-base',
-          '@syncfusion/ej2-vue-buttons':'@syncfusion/ej2-vue-buttons',
-          '@syncfusion/ej2-vue-inputs':'@syncfusion/ej2-vue-inputs',
-          "bootstrap":"bootstrap",
-          "bootstrap-icons":"bootstrap-icons",
-          "lodash":"lodash",
-          "lodash.debounce":"lodash.debounce",
+          '@syncfusion/ej2-base': '@syncfusion/ej2-base',
+          '@syncfusion/ej2-data': '@syncfusion/ej2-data',
+          '@syncfusion/ej2-inputs': '@syncfusion/ej2-inputs',
+          '@syncfusion/ej2-vue-base': '@syncfusion/ej2-vue-base',
+          '@syncfusion/ej2-vue-buttons': '@syncfusion/ej2-vue-buttons',
+          '@syncfusion/ej2-vue-inputs': '@syncfusion/ej2-vue-inputs',
+          "bootstrap": "bootstrap",
+          "bootstrap-icons": "bootstrap-icons",
+          "lodash": "lodash",
+          "lodash.debounce": "lodash.debounce",
+          '@aws-amplify/api': '@aws-amplify/api',
+          'aws-amplify': 'aws-amplify',
         }
       }
     }

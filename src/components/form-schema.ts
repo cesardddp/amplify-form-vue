@@ -100,8 +100,10 @@ export const formSchemaFor = (
       const fieldSchema = fieldFrom(field.type!);
       fieldSchema.defaultValue = field.defaultValue;
       fieldSchema.label = getLabel(field.name, labelMap);
+      fieldSchema.nome = field.name; //cesar add
       formSchema[field.name] = fieldSchema;
     });
+  
     return formSchema;
   };
 

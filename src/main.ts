@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-// import './style.scss'
+import './style.scss'
 
 //
 import "bootstrap/dist/js/bootstrap.min.js";
