@@ -49,8 +49,6 @@ const emit = defineEmits(['update:modelValue'])
 
 const itens_raw = computed({
     get() {
-        console.log(props.modelValue);
-
         return props.modelValue ?? ['']
     },
     set(value) {

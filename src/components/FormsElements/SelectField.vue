@@ -41,8 +41,10 @@ import { computed, ref, toRef } from "vue";
 
 
 const props = withDefaults(defineProps<{
-    options: {label?: string;
-    value: string;}[],
+    options: {
+        label?: string;
+        value: string;
+    }[],
     nome: string,
     label?: string,
     labelCentered?: boolean,
@@ -50,7 +52,7 @@ const props = withDefaults(defineProps<{
     selectedValue?: string,
     // fieldSize?: FieldSize;
     // theme?: FormTheme;
-    modelValue: string | number | boolean
+    modelValue?: string | number | boolean
 
 }>(),
     {
@@ -160,8 +162,9 @@ const value = computed({
     <!-- :styles="{{ customStyles }}" -->
     <!-- </FieldWithError> -->
     <div class="mb-3 text-dark">
-        <label :for="nome" class="form-label">{{ label??nome }}</label>
+        <label :for="nome" class="form-label">{{ label?? nome }}</label>
         <select class="form-select form-select-lg" :name="nome" :id="nome" v-model="value">
+            <option v-if="!modelValue" selected value="undefined">Selecione uma opção...</option>
             <option v-for="op in options" :value="op.value">{{ op.label ?? op.value }}</option>
         </select>
     </div>

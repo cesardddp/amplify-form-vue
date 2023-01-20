@@ -95,6 +95,7 @@ const bs_class_wrap = computed(() => {
             base_wrap = 'form-checkbox'
             break;
         case 'text':
+        case 'number':
             base_wrap = 'form-floating'
             break;
 
