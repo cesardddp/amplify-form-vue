@@ -34,9 +34,13 @@ import { ref, computed } from "vue";
 
 
 
-
-
-
+//html validacao nativa https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation
+type OpcoesValidacoes = 'required' | `minLength:${number}` | `maxLength:${number}`;
+type Validacoes = {
+    required: boolean;
+    minlength?: number;
+    maxlength?: number;
+}
 const props = withDefaults(defineProps<{
     nome: string;
     label?: string;
@@ -46,7 +50,8 @@ const props = withDefaults(defineProps<{
     bs_class_input?: string;
     bs_class_label?: string;
     bootstrap_syncfusion?: 'bs' | 'sf';
-    placeholder?: string,
+    placeholder?: string;
+    validacoes: OpcoesValidacoes[];
     // checkbox
     //sf
     cssSFClass?: string | "e-primary" | "e-success" | "e-info" | "e-warning" | "e-danger";
@@ -79,7 +84,44 @@ const value = computed({
         emit('update:modelValue', value)
     }
 })
+const validacao = computed(() => {
+    let valid_feedback_msg: string[] = [];
+    let invalid_feedback_msg: string[] = [];
+    let validou = false;
+    let validacoes: Validacoes = {
+        required: false,
+        minlength: undefined,
+        maxlength: undefined,
+    }
+    props.validacoes.forEach(v => {
+        switch (v) {
+            case 'required':
+                invalid_feedback_msg.push('Por favor, preencha esse campo!')
+                validacoes.required = true
+                break;
+            case v.match(/minlength:[0-9]*/)?.input:
+                debugger
+                validacoes.minlength = parseInt(
+                    v.replace("minlength:",'')
+                )
+                break;
+            case v.match(/maxlength:[0-9]*/)?.input:
+                debugger
+                validacoes.maxlength = parseInt(
+                    v.replace("maxlength:",'')
+                )
+                break;
+            default:
+                throw new Error("Validador Inválido: " + v);
+        }
+    })
 
+    return {
+        valid_feedback_msg,
+        invalid_feedback_msg,
+        validacoes
+    }
+})
 const cssSFClass = computed(
     () => {
         const cssSyncFusion = props.cssSFClass ? props.cssSFClass : 'e-primary';
@@ -90,6 +132,7 @@ const cssSFClass = computed(
 )
 const bs_class_wrap = computed(() => {
     let base_wrap = '';
+
     switch (props.type) {
         case 'checkbox':
             base_wrap = 'form-checkbox'
@@ -132,8 +175,15 @@ const safeFieldSize = ref('md');//fieldSizeMap.get(fieldSize) ? fieldSize : 'md'
     <div v-if="bootstrap_syncfusion === 'bs'">
         <div :class="bs_class_wrap">
             <input :class="bs_class_input" v-model="value" :type='type' :id="nome" :name="nome"
-                :placeholder="placeholder ?? 'Insira ' + nome" :step="step" :disabled="disabled">
+                :placeholder="placeholder ?? 'Insira ' + nome" :step="step" :disabled="disabled"
+                :required="validacao.validacoes.required" :minlength="validacao.validacoes.minlength"
+                :maxlength="validacao.validacoes.maxlength">
             <label :class="bs_class_label" :for="nome">{{ label }}</label>
+            <div class="valid-feedback"></div>
+            <div class="invalid-feedback">
+                <p v-for="m in validacao.invalid_feedback_msg">{{ m }}</p>
+            </div>
+
         </div>
     </div>
     <div v-else-if="bootstrap_syncfusion === 'sf'">

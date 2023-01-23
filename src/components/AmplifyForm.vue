@@ -54,30 +54,48 @@ function return_element(schema: FormSchema) {
   }
 }
 function return_props(schema: FormSchema) {
+  const validacoes = []
+  if (schema.required) validacoes.push('required')
   switch (schema.kind) {
     case 'SELECT':
 
       return {
         nome: schema.label,
         label: schema.label,
-        options: schema.options
+        options: schema.options,
+        validacoes
       }
     case 'LIST':
       return {
         nome: schema.label,
         label: schema.label,
+        validacoes
+
+
       }
     case 'INT':
-      return { nome: schema.label, label: schema.label, type: 'number' }
+      return {
+        nome: schema.label, label: schema.label, type: 'number',
+        validacoes
+      }
 
     case 'BOOLEAN':
-      return { nome: schema.label, label: schema.label, type: 'checkbox' }
+      return {
+        nome: schema.label, label: schema.label, type: 'checkbox',
+        validacoes
+      }
 
     case 'STRING':
-      return { nome: schema.label, label: schema.label, type: 'text', bootstrap_syncfusion: 'sf' }
+      return {
+        nome: schema.label, label: schema.label, type: 'text', bootstrap_syncfusion: 'bs',
+        validacoes
+      }
 
     default:
-      return { nome: schema.label, label: schema.label, type: 'text' }
+      return {
+        nome: schema.label, label: schema.label, type: 'text',
+        validacoes
+      }
   }
 }
 
@@ -90,31 +108,33 @@ export default defineComponent({
   },
   emits: ['refs'],
   methods: {
-    async api() {
-      // colunas.value?.forEach(coluna => {
-      //   if (coluna.valor_padrao && !data[coluna.configs.nome]) {
-      //     data[coluna.configs.nome] = coluna.valor_padrao()
-      //   }
-      // })
+    // async api() {
+    //   debugger
+    //   // this.was_validate
+    //   // colunas.value?.forEach(coluna => {
+    //   //   if (coluna.valor_padrao && !data[coluna.configs.nome]) {
+    //   //     data[coluna.configs.nome] = coluna.valor_padrao()
+    //   //   }
+    //   // })
 
-      const options = {
-        query: (this.$props.mutations as any)['create' + this.$props.form_props?.entity],
-        variables: { input: this.refs },
-        // authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
-      }
-      debugger
-      try {
-        const result = await (API.graphql(options) as Promise<any>);
-        alert("hum")
-      } catch (error: any) {
-        console.log('error: ', error);
-        alert(error.tostring())
-      } finally {
-        // atualizaPagina()
-      }
+    //   const options = {
+    //     query: (this.$props.mutations as any)['create' + this.$props.form_props?.entity],
+    //     variables: { input: this.refs },
+    //     // authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+    //   }
+    //   debugger
+    //   try {
+    //     const result = await (API.graphql(options) as Promise<any>);
+    //     alert("hum")
+    //   } catch (error: any) {
+    //     console.log('error: ', error);
+    //     alert(error.tostring())
+    //   } finally {
+    //     // atualizaPagina()
+    //   }
 
 
-    }
+    // }
   }
   ,
   setup(props, { emit }) {
@@ -145,7 +165,37 @@ export default defineComponent({
 
       emit('refs', refs)
     }, { deep: true })
-    return { formSchema, return_element, return_props, refs }
+
+    const was_validated = ref(false)
+
+    async function api() {
+      was_validated.value = true
+      // colunas.value?.forEach(coluna => {
+      //   if (coluna.valor_padrao && !data[coluna.configs.nome]) {
+      //     data[coluna.configs.nome] = coluna.valor_padrao()
+      //   }
+      // })
+
+      const options = {
+        query: (props.mutations as any)['create' + props.form_props?.entity],
+        variables: { input: refs },
+        // authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+      }
+      debugger
+      try {
+        const result = await (API.graphql(options) as Promise<any>);
+        alert("hum")
+      } catch (error: any) {
+        console.log('error: ', error);
+        alert(error.tostring())
+      } finally {
+        // atualizaPagina()
+      }
+
+
+    }
+
+    return { formSchema, return_element, return_props, refs, api, was_validated }
   }
 }
 )
@@ -153,7 +203,10 @@ export default defineComponent({
 
 
 <template>
-  <component v-for="campo, index in formSchema" :is="return_element(campo as FormSchema)"
-    v-bind="return_props(campo as FormSchema)" v-model="refs[(campo as any).nome]" :key="index" class="m-1" />
-  <button @click="api" type="submit" class="btn btn-primary">Submit</button>
+  <form @submit.prevent :class="was_validated ? 'was-validated' : ''">
+    <component v-for="campo, index in formSchema" :is="return_element(campo as FormSchema)"
+      v-bind="return_props(campo as FormSchema)" :was_validated="was_validated" v-model="refs[(campo as any).nome]"
+      :key="index" class="m-1" />
+    <button @click="api" type="submit" class="btn btn-primary">Submit</button>
+  </form>
 </template>

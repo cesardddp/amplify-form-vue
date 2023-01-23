@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 .vscode/extensions.json
 src/components/AmplifyForm.tsx.ignore
+src/example/mutations.ts
+src/example/queries.ts
