@@ -60,7 +60,7 @@ const itens_raw = computed({
 })
 </script>
 <template>
-    <section class="border p-1">
+    <section class="border rounded p-1">
         <label :class="bs_class_label">{{ label }}</label>
         <div v-for="item, index in itens_raw" :key="index" :class="bs_class_wrap" class="row w-100">
             <div class="col">

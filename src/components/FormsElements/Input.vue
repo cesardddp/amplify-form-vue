@@ -102,13 +102,13 @@ const validacao = computed(() => {
             case v.match(/minlength:[0-9]*/)?.input:
                 debugger
                 validacoes.minlength = parseInt(
-                    v.replace("minlength:",'')
+                    v.replace("minlength:", '')
                 )
                 break;
             case v.match(/maxlength:[0-9]*/)?.input:
                 debugger
                 validacoes.maxlength = parseInt(
-                    v.replace("maxlength:",'')
+                    v.replace("maxlength:", '')
                 )
                 break;
             default:
