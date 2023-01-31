@@ -39,6 +39,7 @@ import { computed, ref, toRef } from "vue";
 
 
 
+type OpcoesValidacoes = 'required' | `minLength:${number}` | `maxLength:${number}`;
 
 const props = withDefaults(defineProps<{
     options: {
@@ -52,7 +53,8 @@ const props = withDefaults(defineProps<{
     selectedValue?: string,
     // fieldSize?: FieldSize;
     // theme?: FormTheme;
-    modelValue?: string | number | boolean
+    modelValue?: string | number | boolean,
+    validacoes: OpcoesValidacoes[];
 
 }>(),
     {
@@ -137,8 +139,49 @@ const value = computed({
 //     validate,
 //     ...rest,
 // });
+type Validacoes = {// TODO tirar isso para fora, como syncfusion
+    required: boolean;
+    minlength?: number;
+    maxlength?: number;
+}
+const validacao = computed(() => {
+    let valid_feedback_msg: string[] = [];
+    let invalid_feedback_msg: string[] = [];
+    let validou = false;
+    let validacoes: Validacoes = {
+        required: false,
+        minlength: undefined,
+        maxlength: undefined,
+    }
+    props.validacoes.forEach(v => {
+        switch (v) {
+            case 'required':
+                invalid_feedback_msg.push('Por favor, preencha esse campo!')
+                validacoes.required = true
+                break;
+            case v.match(/minlength:[0-9]*/)?.input:
+                debugger
+                validacoes.minlength = parseInt(
+                    v.replace("minlength:", '')
+                )
+                break;
+            case v.match(/maxlength:[0-9]*/)?.input:
+                debugger
+                validacoes.maxlength = parseInt(
+                    v.replace("maxlength:", '')
+                )
+                break;
+            default:
+                throw new Error("Validador Inválido: " + v);
+        }
+    })
 
-
+    return {
+        valid_feedback_msg,
+        invalid_feedback_msg,
+        validacoes
+    }
+})
 
 </script>
 <template>
@@ -161,12 +204,12 @@ const value = computed({
 
     <!-- :styles="{{ customStyles }}" -->
     <!-- </FieldWithError> -->
-    <div class="mb-3 text-dark">
-        <label :for="nome" class="form-label">{{ label?? nome }}</label>
-        <select class="form-select form-select-lg" :name="nome" :id="nome" v-model="value">
-            <option v-if="!modelValue" selected value="undefined">Selecione uma opção...</option>
+    <div class="form-floating">
+        <select class="form-select" :name="nome" :id="nome" v-model="value" aria-label="Floating label select" 
+        :required="validacao.validacoes.required">
+            <option v-if="!modelValue" selected value="">Selecione uma opção...</option>
             <option v-for="op in options" :value="op.value">{{ op.label ?? op.value }}</option>
         </select>
+        <label :for="nome" class="form-label">{{ label?? nome }}</label>
     </div>
-
 </template>
