@@ -18,22 +18,21 @@ import { Auth, API, Cache as AmplifyCache } from 'aws-amplify';
 // import * as mutations from "../graphql/mutations";
 
 // merm
-import { Coluna } from "./types/tabela/construtores";
 import cogListUser, { cogUser } from './cogUser';
-import { Api, Modulo } from './types/merm_empresa_types';
+import { Api, Modulo } from '../merm-types/merm_empresa_types';
 // import { novo_log } from '../services/log';
-import { opcoes_default } from "./types/tabela/construtores";
+import { opcoes_default } from "../merm-types/tabela/construtores";
 // import { ativarCognitoUser, atualizaUsuario, createUsuario, deleteCognitoUser, desativarCognitoUser, listCognitoUsers } from '../services/coginitoApi';
 import { PropType } from "vue";
-import { OpcoesTabela } from './types/tabela/types';
-import { ColunaConfigs } from "./types/tabela/types";
+import { OpcoesTabela } from '../merm-types/tabela/types';
+import { ConfigColunasGrid,GridTypes } from "../merm-types/tabela";
 
 export default defineComponent({
   props: {
     queries: Object,
     mutations: Object,
     opcoes: { type: Object as PropType<OpcoesTabela>, required: true },
-    colunas: { type: Object as PropType<ColunaConfigs[]>, required: true },
+    colunas: { type: Object as PropType<GridTypes.ColunaConfigs[]>, required: true },
     api: {
       type: Object as PropType<Api>, required: true
     },
@@ -42,11 +41,13 @@ export default defineComponent({
     acoes: Array as PropType<{
       nome: string,
       acao: Function
-    }[]>
+    }[]>,
+    carregaDados:Function
   },
   provide: {
     grid: [Page, Edit, Toolbar, Resize, Search, PdfExport, Sort, Filter]
   },
+  // emits:['recarregarTabela'],
   setup(props) {
 
     // const props = defineProps<{ tela: string, filter: string, user: any, groups: string[] }>()
@@ -78,7 +79,9 @@ export default defineComponent({
     //   if (api_ === undefined) { throw new Error("API não encontrada em Tabela"); }
     //   return api_
     // })
-
+// function carregaDadosExterno() {
+//   carregaDados
+// }
     const opcoes = computed(
       () => {
         let op = {
@@ -89,7 +92,7 @@ export default defineComponent({
       }
     )
     const colunas = computed(() => props.colunas.map(
-      col => new Coluna(
+      col => new ConfigColunasGrid(
         { ...col }
       )).sort((e1, e2) => e1.configs.posicao - e2.configs.posicao)
     )
@@ -231,18 +234,18 @@ export default defineComponent({
     async function listar(): Promise<{ data: any, requeridor: string }> {
 
       const resposta: { data: any, requeridor: string } = { data: undefined, requeridor: props.api.nome }
-      const nome_grupo_model = props.api.nome_grupo_model
+      const nome_grupo_model = props.api.nome_entidade
 
       if (props.api.tipoApi === "GraphQL") {
-        const variables = props.filter ? {
-          filter: { owner: { contains: props.filter } }
-        } : undefined
+        const variables =  {
+          filter: props.api.listOptions?.filter 
+        }
         try {
 
 
           const options = {
             query: (props.queries as any)['list' + nome_grupo_model + 's'],
-            // authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+            authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
             variables
           }
           const t = await (
@@ -384,18 +387,17 @@ export default defineComponent({
     const carregar_dados = async () => {
       // const DURACAO_CACHE_LOCAL_DIAS = 1
       carregando_dados.value = true
-      const cache = AmplifyCache.getItem(props.api.nome + props.api.nome_grupo_model + props.filter)
+      const cache = AmplifyCache.getItem(props.api.nome + props.api.nome_entidade + props.filter)
 
-      // rawdata.value = cache;
+      rawdata.value = new DataManager(cache);
       try {
         const result = await listar()
-        debugger
         if (
           result.requeridor === props.api.nome
         ) {
           rawdata.value = new DataManager(result.data)
           AmplifyCache.setItem(
-            props.api.nome + props.api.nome_grupo_model + props.filter,
+            props.api.nome + props.api.nome_entidade + props.filter,
             result.data,
             // { expires: expires_day.getTime() }
           );
@@ -412,15 +414,14 @@ export default defineComponent({
     const dados_na_tabela = computed(() => {
       let data = rawdata.value
       const customFiltroOps = opcoes.value.customFiltroOpcoes;
-      debugger
       if (customFiltroOps && customFiltro.value) {
-        debugger
         data = rawdata.value.executeLocal(
           new Query()
-            .where(customFiltroOps.coluna, 'equal', customFiltro.value)
-        )
-      }
-      return data;
+          .where(customFiltroOps.coluna, 'equal', customFiltro.value)
+          )
+        }
+        console.log(data.dataSource.json);
+        return data.dataSource.json;
     })
     // custom fields /////////////////////////////////////////////////////////////////////////////////
     let tbElem: any = undefined;
@@ -464,7 +465,7 @@ export default defineComponent({
         })
 
         const options = {
-          query: (props.mutations as any)['create' + props.api.nome_grupo_model],
+          query: (props.mutations as any)['create' + props.api.nome_entidade],
           variables: { input: data },
           authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
         }
@@ -484,13 +485,13 @@ export default defineComponent({
         //     acao: "Criação ok!"
         //   }
         // )
-        // return result.data["create" + props.api.nome_grupo_model] //?? null}
+        // return result.data["create" + props.api.nome_entidade] //?? null}
 
       }
       //  else if (props.api.tipoApi === 'Cognito') {
       //   try {
       //     const result = await createUsuario(
-      //       props.api.nome_grupo_model,
+      //       props.api.nome_entidade,
       //       data.email,
       //       data.password,
       //       [
@@ -576,7 +577,6 @@ export default defineComponent({
       //     }
       //   }
       //   try {
-      //     debugger
       //     const resposta = (await API.graphql(
       //       {
       //         query: (props.mutations as any)[api_name],
@@ -611,7 +611,7 @@ export default defineComponent({
       // beneficio.valor = beneficio.valor ? beneficio.valor * 100 : 0;
       if (props.api.tipoApi === "GraphQL") {
         const result = (await API.graphql({
-          query: (props.mutations as any)['update' + props.api.nome_grupo_model],
+          query: (props.mutations as any)['update' + props.api.nome_entidade],
           variables: { input: input },
           authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
         })) as Promise<any>;
@@ -694,7 +694,7 @@ export default defineComponent({
       // 
       if (props.api.tipoApi === "GraphQL") {
         const result = await (API.graphql({
-          query: (props.mutations as any)['delete' + props.api.nome_grupo_model],
+          query: (props.mutations as any)['delete' + props.api.nome_entidade],
           variables: { input: { id: data.id } },
           authMode: "AMAZON_COGNITO_USER_POOLS"
         }) as Promise<any>);
@@ -708,7 +708,7 @@ export default defineComponent({
         //     acao: `Exclução ${data.id} ok!`
         //   }
         // )
-        return result.data["delete" + props.api.nome_grupo_model]
+        return result.data["delete" + props.api.nome_entidade]
       }
       else {
         // deleteCognitoUser(data.username)
@@ -741,7 +741,7 @@ export default defineComponent({
       carregando_dados,
       actionComplete,
       actionBegin,
-      temColunaAcoes: props.acoes === undefined,
+      temColunaAcoes: !(props.acoes === undefined),
       acoes: props.acoes
     }
 
@@ -783,10 +783,10 @@ export default defineComponent({
 </script>
 
 <template>
-  <h1 class="text-center my-4">{{ nome_tela }}</h1>
+  <h1 v-if="opcoes.titulo.visibilidade"  class="text-center my-4" :class="opcoes.titulo.css_class">{{ nome_tela }}</h1>
   <div class="row justify-content-center">
 
-    <div class="col-sm-4 col-md-2 align-self-top d-flex flex-column h-100 justify-content-center">
+    <div v-if="opcoes.paginacaoOpcoes.allowPaging" class="col-sm-4 col-md-2 align-self-top d-flex flex-column h-100 justify-content-center">
       <label for="pagesize" class="form-label ">
         Mostrar
         <select class="form-select form-select-sm" name="pagesize" id="pagesize" v-model="pageSize">

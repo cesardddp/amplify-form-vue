@@ -1,13 +1,14 @@
 <script setup lang="ts" >
 import TextField from "./TextField.vue";
 import TextAreaField, { TextAreaFieldProps } from "./TextAreaField.vue";
-import SubmitButton, { SubmitButtonProps } from "./SubmitButton.vue";
+import SubmitButton from "./SubmitButton.vue";
 import SelectField from "./SelectField.vue";
 import Items from "./Items.vue";
 import { ref, reactive, markRaw, watch, watchEffect } from "vue";
 import Input from "./Input.vue";
 import Controlador from "./controlador.vue";
 import _ from "lodash";
+import { SubmitButtonProps } from "../types";
 
 const baseFieldProps = {
     nome: 'base',
