@@ -20,13 +20,15 @@ import {
   TextAreas,
   Messages,
   FieldsProps,
+  SubmitButtonProps,
 } from './types';
-import { defineComponent, markRaw, reactive, ref, watch } from 'vue'
+import { defineComponent, markRaw, reactive, ref, toRef, watch } from 'vue'
 import type { PropType } from 'vue'
 import Input from "./FormsElements/Input.vue";
 import SelectField from "./FormsElements/SelectField.vue";
 import Items from "./FormsElements/Items.vue";
-
+import SubmitButton from "./FormsElements/SubmitButton.vue";
+import { Cache } from "aws-amplify";
 //
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from '@aws-amplify/api';
 import { Auth, API, Cache as AmplifyCache } from 'aws-amplify';
@@ -70,8 +72,6 @@ function return_props(schema: FormSchema) {
         nome: schema.label,
         label: schema.label,
         validacoes
-
-
       }
     case 'INT':
       return {
@@ -90,8 +90,13 @@ function return_props(schema: FormSchema) {
         nome: schema.label, label: schema.label, type: 'text', bootstrap_syncfusion: 'bs',
         validacoes
       }
-
+    case 'relationship':
+      return {
+        nome: schema.label, label: schema.label, type: 'text',
+        validacoes, bs_class_wrap: 'd-none'
+      }
     default:
+      debugger
       return {
         nome: schema.label, label: schema.label, type: 'text',
         validacoes
@@ -104,9 +109,16 @@ export default defineComponent({
     form_props: Object as PropType<AmplifyFormProps>,
     queries: Object,
     mutations: Object,
-    prefill: Object
+    prefill: Object,
+    create_update: String as PropType<'create' | 'update'>,
+    nro_colunas: { type: Number, default: 2 },
+    disabled: Boolean,
+    submitbutton: Object as PropType<SubmitButtonProps>
   },
-  emits: ['refs'],
+  components: {
+    SubmitButton
+  },
+  emits: ['refs', 'submit_result'],
   methods: {
     // async api() {
     //   debugger
@@ -138,7 +150,6 @@ export default defineComponent({
   }
   ,
   setup(props, { emit }) {
-
     if (!props.form_props) throw new Error("?");
     const formSchema = formSchemaFor(
       props.form_props?.graphQLJSONSchema,
@@ -167,35 +178,52 @@ export default defineComponent({
     }, { deep: true })
 
     const was_validated = ref(false)
-
+    const submited = ref<'success' | 'error' | 'waiting'>('waiting')
     async function api() {
       was_validated.value = true
-      // colunas.value?.forEach(coluna => {
-      //   if (coluna.valor_padrao && !data[coluna.configs.nome]) {
-      //     data[coluna.configs.nome] = coluna.valor_padrao()
-      //   }
-      // })
+        let erro=false;
+      for (let k in formSchema) {
+        const r = (formSchema[(k as keyof typeof formSchema)] as FormSchema)?.required;
+        if (r) {
+          if (refs[k] === undefined) {
+            alert(`Por favor, preencha o campo "${k}" `)
+            erro=true;
+          }
+
+        }
+      }
+      if(erro)return;
 
       const options = {
         query: (props.mutations as any)['create' + props.form_props?.entity],
         variables: { input: refs },
-        // authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+        authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
       }
-      debugger
+
       try {
         const result = await (API.graphql(options) as Promise<any>);
-        alert("hum")
+        alert("Sucesso!")
+        // TODO emita o result.data.createCoisa
+        emit('submit_result', result.data['create' + props.form_props?.entity])
       } catch (error: any) {
         console.log('error: ', error);
-        alert(error.tostring())
+        emit('submit_result', error)
+        alert(error)
       } finally {
         // atualizaPagina()
       }
 
 
     }
-
-    return { formSchema, return_element, return_props, refs, api, was_validated }
+    const nro_colunas = ref(Cache.getItem(props.form_props?.entity + 'nro_colunas') ?? props.nro_colunas)
+    function muda_nro_col() {
+      if (nro_colunas.value === 6) nro_colunas.value = 1
+      else {
+        nro_colunas.value += 1
+      }
+      Cache.setItem(props.form_props?.entity + 'nro_colunas', nro_colunas.value)
+    }
+    return { formSchema, return_element, return_props, refs, api, was_validated, submited, nro_colunas, muda_nro_col, disabled: props.disabled, submit_button: props.submitbutton }
   }
 }
 )
@@ -203,10 +231,35 @@ export default defineComponent({
 
 
 <template>
-  <form @submit.prevent :class="was_validated ? 'was-validated' : ''">
+  <div class="btn-group">
+    <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+      aria-expanded="false">
+    </button>
+    <ul class="dropdown-menu">
+      <li class="d-flex justify-content-center">
+        <button @click="muda_nro_col" type="button" class="btn btn-outline-info btn-sm m-0"><i
+            class="bi bi-arrow-left-right">{{ 'colunas: '+nro_colunas }}</i></button>
+      </li>
+
+      <!-- <li><a class="dropdown-item" href="#">Menu item</a></li> -->
+      <!-- <li><a class="dropdown-item" href="#">Menu item</a></li> -->
+    </ul>
+  </div>
+
+  <form @submit.prevent class="container w-100 row"
+    :class="was_validated ? 'was-validated  row-cols-' + nro_colunas : 'row-cols-' + nro_colunas">
     <component v-for="campo, index in formSchema" :is="return_element(campo as FormSchema)"
       v-bind="return_props(campo as FormSchema)" :was_validated="was_validated" v-model="refs[(campo as any).nome]"
-      :key="index" class="m-1" />
-    <button @click="api" type="submit" class="btn btn-primary">Submit</button>
+      :key="index" class="my-1" :disabled="disabled" />
   </form>
+  <div class="w-100 d-flex justify-content-center">
+    <!-- <button v-if="submited === 'waiting' || submited === 'error'" @click="api" type="submit"
+      class="btn btn-primary text-center">
+      {{ submited=== 'waiting' ? 'Enviar' : 'Tentar Novamente?' }}</button>
+      aaaaaaaaaaaa -->
+
+
+    <SubmitButton class="text-center" v-if="submited === 'waiting' || submited === 'error'" @click="api" type="submit"
+      v-bind:submit_props="submit_button" />
+  </div>
 </template>

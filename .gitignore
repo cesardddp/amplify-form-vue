@@ -26,3 +26,5 @@ dist-ssr
 src/components/AmplifyForm.tsx.ignore
 src/example/mutations.ts
 src/example/queries.ts
+package-lock.json
+syncfusion-license.txt

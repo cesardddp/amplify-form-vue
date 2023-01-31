@@ -10,9 +10,10 @@ import { TextBoxPlugin,TextBoxComponent } from '@syncfusion/ej2-vue-inputs';
 import { CheckBoxPlugin,CheckBoxComponent } from '@syncfusion/ej2-vue-buttons';
 import { ButtonPlugin,ButtonComponent } from '@syncfusion/ej2-vue-buttons';
 import { registerLicense } from "@syncfusion/ej2-base";
-import { enableRipple } from '@syncfusion/ej2-base';
-import { NumericTextBoxComponent, NumericTextBoxPlugin } from '@syncfusion/ej2-vue-inputs';
 
+// import { enableRipple } from '@syncfusion/ej2-base';
+import { NumericTextBoxComponent, NumericTextBoxPlugin } from '@syncfusion/ej2-vue-inputs';
+import { GridPlugin, GridComponent, ColumnsDirective, ColumnsPlugin, ColumnDirective, ColumnPlugin } from "@syncfusion/ej2-vue-grids";
 
 //
 
@@ -22,20 +23,18 @@ import App from './App.vue'
 //
 
 //
-import lodash from 'lodash'
 
 // name is optional
 
 
-registerLicense(
-    "ORg4AjUWIQA/Gnt2VVhjQlFaclhJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRd0VgWH9ZdHFVQGhVUUM="
-);
-enableRipple(true);
-
-
+// enableRipple(true);
+// registerLicense("ORg4AjUWIQA/Gnt2VVhkQlFadVdJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxQdkRhXH5dc3NXQmdaVEM=");
 createApp(App)
-    .component(TextBoxPlugin.name,TextBoxComponent)
-    .component(CheckBoxPlugin.name,CheckBoxComponent)
-    .component(ButtonPlugin.name,ButtonComponent)
-    .component(NumericTextBoxPlugin.name, NumericTextBoxComponent)
+.component(TextBoxPlugin.name, TextBoxComponent)
+.component(CheckBoxPlugin.name, CheckBoxComponent)
+.component(ButtonPlugin.name, ButtonComponent)
+.component(NumericTextBoxPlugin.name, NumericTextBoxComponent)
+.component(GridPlugin.name, GridComponent)
+.component(ColumnsPlugin.name, ColumnsDirective)        
+.component(ColumnPlugin.name, ColumnDirective)
     .mount('#app')

@@ -137,7 +137,7 @@ export interface FormSchema {
   // kind?: string//"SCALAR" | "OBJECT" | "NON_NULL" | "INPUT_OBJECT" | "ENUM" | "LIST"|"BOOLEAN"|"INT"|"SELECT"|"STRING";
   // kind?: 'ENUM' | 'INPUT_OBJECT' | 'LIST' | 'NON_NULL' | 'OBJECT' | 'SCALAR';
   // https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html
-  kind?: "ID"|"STRING"|"INT"|"FLOAT"|"BOOLEAN"|"AWSDATE"|"AWSTIME"|"AWSDATETIME"|"AWSTIMESTAMP"|"AWSEMAIL"|"AWSJSON"|"AWSPHONE"|"AWSURL"|"AWSIPADDRESS"|'relationship'|'LIST'|'unhandled' |'SELECT';
+  kind?: "ID" | "STRING" | "INT" | "FLOAT" | "BOOLEAN" | "AWSDATE" | "AWSTIME" | "AWSDATETIME" | "AWSTIMESTAMP" | "AWSEMAIL" | "AWSJSON" | "AWSPHONE" | "AWSURL" | "AWSIPADDRESS" | 'relationship' | 'LIST' | 'unhandled' | 'SELECT';
   options?: Option[];
   of?: FormSchema;
   fileType?: string;
@@ -207,7 +207,19 @@ export interface FilesDropFieldProps
 
 export interface SubmitButtonProps {//extends HTMLProps<HTMLButtonElement> {
   title?: string;
-  theme?: FormTheme;
+  // theme?: FormTheme;
+  bootstrap_syncfusion?: 'bs' | 'sf';
+  fs_isPrimary?: boolean;
+  btn_theme: "btn-primary" | "btn-secondary" | "btn-success" | "btn-danger" | "btn-warning" | "btn-info" | "btn-light" | "btn-dark";
+  //   theme?: FormTheme;
+  disabled?: boolean;
+  bs_class_wrap?: string;
+  bs_class_input?: string;
+  bs_class_label?: string;
+
+  //fs props
+  iconCss?: string;
+  iconPosition?: "Left" | "Right";
 }
 
 export interface ObjectWithKey {

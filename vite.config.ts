@@ -28,7 +28,8 @@ export default defineConfig({
         "bootstrap-icons",
         "lodash",
         "lodash.debounce",
-
+        "@syncfusion/ej2-vue-grids",
+        "cpf-cnpj-validator"
       ],
       output: {
         // Provide global variables to use in the UMD build
@@ -48,6 +49,8 @@ export default defineConfig({
           "lodash.debounce": "lodash.debounce",
           '@aws-amplify/api': '@aws-amplify/api',
           'aws-amplify': 'aws-amplify',
+          "@syncfusion/ej2-vue-grids":"@syncfusion/ej2-vue-grids",
+          "cpf-cnpj-validator":"cpf-cnpj-validator"
         }
       }
     }
