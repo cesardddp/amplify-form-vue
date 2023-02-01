@@ -10,7 +10,7 @@ import SelectField from "./FormsElements/SelectField.vue";
 import Items from "./FormsElements/Items.vue";
 import { ref } from "vue";
 
-import formSchemaFor from "./form-schema";
+import formSchemaFor from "./AmplifyForm/form-schema";
 import graphqlJSONSchema from "../example/schema.json";
 
 

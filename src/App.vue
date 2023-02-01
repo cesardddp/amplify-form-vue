@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import awsconfig from './old.js';
-import AmplifyFormVue from "./components/AmplifyForm.vue";
+import AmplifyFormVue from "./components/AmplifyForm/AmplifyForm.vue";
 import Tabela from "./components/Table/Tabela.vue";
 import { AmplifyFormProps } from "./components/types";
 import schema from "./example/schema.json";
@@ -10,11 +10,7 @@ import { reactive } from "vue";
 import {  GridTypes } from "./components/merm-types/tabela";
 import { Api } from "./components/merm-types/merm_empresa_types";
 
-const props: AmplifyFormProps = {
-  graphQLJSONSchema: schema,
-  entity: 'view',
-  onSubmit: () => console.log('submit'),
-}
+
 const v = reactive(
   {
     "nome": "a",
@@ -55,22 +51,47 @@ const colunas: GridTypes.ColunaConfigs[] = [
   {label: 'label2',nome: 'nome2',posicao: 1,},
   {label: 'label3',nome: 'nome3',posicao: 2,},
 ]
+
+// campo teste
+const form_campo = {
+      
+      graphQLJSONSchema: schema,
+      entity: 'Campo',
+      onSubmit: () => { console.log('submit'); debugger },
+    
+  }
+// view test
+const form_view: AmplifyFormProps = {
+  graphQLJSONSchema: schema,
+  entity: 'View',
+  onSubmit: () => console.log('submit'),
+}
 const api:Api = {
   nome: 'api nome',
   tipoApi: 'GraphQL',
-  nome_entidade: props.entity,
+  nome_entidade: form_view.entity,
 
 }
 </script>
 
 <template>
   
-      <AmplifyFormVue :form_props="props" 
-      :queries="queries"
-      :mutations="mutations"
-      :prefill="v"
-      />
-  <Tabela :colunas="colunas" :opcoes="tabelaOpcoes" :tela="'teste'" :api="api" :queries="queries"       :mutations="mutations"/>
+  teste campos:
+  <!-- :prefill="prefill" -->
+  <AmplifyFormVue
+      @submit_result="e=>$emit('result',e)" 
+      @refs="form_refs" 
+      :form_props="form_campo" 
+      :queries="(queries as any)" 
+      :mutations="(mutations as any)"
+    />
+  
+      <!-- <AmplifyFormVue :form_props="form_view"  -->
+      <!-- :queries="queries" -->
+      <!-- :mutations="mutations" -->
+      <!-- :prefill="v" -->
+      <!-- /> -->
+  <!-- <Tabela :colunas="colunas" :opcoes="tabelaOpcoes" :tela="'teste'" :api="api" :queries="queries"       :mutations="mutations"/> -->
 </template>
 
 <style scoped>

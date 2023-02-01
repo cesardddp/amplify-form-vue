@@ -1,8 +1,8 @@
-import { FormSchema, Option, Type, Field, GraphQLJSONSchema } from './types';
-import { GraphQLJSONSchema as GraphQLJSONSchema2 } from "./types_generated";
+import { FormSchema, Option, Type, Field } from '../types';
 import capitalize from 'lodash/capitalize';
+import { graphql_schema } from "../merm-types/generated_amplify_graphql_schema_interfaces";
 
-const getTypesFor = (graphqlJSONSchema: GraphQLJSONSchema) => {
+const getTypesFor = (graphqlJSONSchema: graphql_schema) => {
   try {
     const types: Field[] | undefined = graphqlJSONSchema?.data.__schema?.types;
     return types;
@@ -29,12 +29,12 @@ export const getEnumValues = (
   });
 };
 
-export const formSchemaFor = (
-  graphqlJSONSchema: GraphQLJSONSchema2,
+export function formSchemaFor(
+  graphqlJSONSchema: graphql_schema,
   entity: string,
   mutation?: 'create' | 'update',
   labelMap?: Map<string, string>
-) => {
+) {
   const fullname = (mutation || '') + entity + 'Input';
   const types = getTypesFor(graphqlJSONSchema);
 
@@ -42,12 +42,7 @@ export const formSchemaFor = (
     const baseField = types.find(
       type => type.name.toLowerCase() == fullEntity.toLowerCase()
     );
-    if (!baseField)
-      throw Error(
-        `Unable to find '${capitalize(
-          entity
-        )}' in the schema (looking for '${fullEntity}')`
-      );
+    if (!baseField) throw Error(`Unable to find '${capitalize(entity)}' in the schema (looking for '${fullEntity}')`);
 
     const fields =
       baseField.kind == 'INPUT_OBJECT'
@@ -85,7 +80,8 @@ export const formSchemaFor = (
           };
 
         case 'INPUT_OBJECT':
-          return formSchemaForTypes(type.name!);
+          const k = formSchemaForTypes(type.name!);
+          return k;
         case 'OBJECT':
           return formSchemaForTypes(type.name!);
         default:
@@ -103,7 +99,7 @@ export const formSchemaFor = (
       fieldSchema.nome = field.name; //cesar add
       formSchema[field.name] = fieldSchema;
     });
-  
+
     return formSchema;
   };
 

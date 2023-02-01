@@ -1,4 +1,4 @@
-import formSchemaFor from "./form-schema";
+import formSchemaFor from "./AmplifyForm/form-schema";
     import graphqlJSONSchema from "../example/schema.json";
 // import { Campos, Empresa } from "../models";
 import { GraphQLJSONSchema } from "./types_generated";
