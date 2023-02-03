@@ -3,167 +3,267 @@ import {
   FormSchema,
 } from '../types';
 import { Ref, defineComponent, markRaw, reactive, ref, toRef, watch } from 'vue'
-import Input from "../FormsElements/Input.vue";
-import SelectField from "../FormsElements/SelectField.vue";
-import Items from "../FormsElements/Items.vue";
+import Input, { InputProps } from "../FormsElements/Input.vue";
+import SelectField, { SelectProps } from "../FormsElements/SelectField.vue";
+import Items, { ItemsProps } from "../FormsElements/Items.vue";
 import { Cache } from "aws-amplify";
-import { debug } from 'console';
+import { OpcoesValidacoes } from "../types";
 //
 //
 
-function get_element(schema: FormSchema) {
-  switch (schema.kind) {
-    case 'SELECT':
-      return SelectField
-    case 'LIST':
-      return Items
 
-    case 'INT':
-    case 'BOOLEAN':
-    case 'STRING':
-    case 'relationship':
-      return Input
-    default:
-      debugger
-      throw new Error("schema.kind desconhecido: " + schema.kind);
+
+type InputComponent = {
+  is: "Input",
+  props: InputProps,
+  disabled: boolean
+}
+type SelectFieldComponent = {
+  is: "SelectField",
+  props: SelectProps,
+  disabled: boolean
+}
+type ItemsComponent = {
+  is: "Items",
+  props: ItemsProps,
+  disabled: boolean
+}
+function getFormElement(
+  elementOptions: {
+    name: string,
+    formSchema: FormSchema,
+    // theme?: FormTheme
+    refs: { [k: string]: Ref },
+    disabled: boolean
+    prefix?: string,
+    entity:string
+    // prefix?: string = '',
+  }
+
+): InputComponent | SelectFieldComponent | ItemsComponent {
+  const { kind, label, options, of, required, defaultValue, ...props } =
+    elementOptions.formSchema;
+  // const explicitName = (elementOptions.prefix ? elementOptions.prefix + '.' : '') + elementOptions.name;
+  const explicitName = elementOptions.name;
+
+
+  const validacoes: OpcoesValidacoes[] = []
+  if (required) validacoes.push('required');
+
+
+  if (!elementOptions.formSchema) {
+    throw new Error("!formschema");
 
   }
-}
 
-function get_props(schema: FormSchema) {
-  const validacoes = []
+  switch (kind) {
+    // case undefined:
+    //   return {
 
-  if (schema.required) validacoes.push('required');
+    //     props: {
 
-  switch (schema.kind) {
-    case 'SELECT':
+    //       name: explicitName,
+    //       label: label, //|| defaultLabel,
+    //     }
+
+    //     sei_la:
+    //       Object.keys(props!).map(
+    //         fieldName =>
+    //           getFormElement(
+    //             fieldName,
+    //             props[fieldName]! as FormSchema,
+    //             name,
+    //             // (theme = theme)
+    //           )
+    //       )
+    //   } as 
+
+
+    case 'STRING':
+    case 'AWSEMAIL':
+    case 'AWSURL':
+    case 'relationship':
       return {
-        nome: schema.label,
-        label: schema.label,
-        options: schema.options,
-        validacoes
-      }
-    case 'LIST':
-      return {
-        nome: schema.label,
-        label: schema.label,
-        validacoes
-      }
+        is: 'Input',
+        // name:  explicitName ,
+        props: {
+          nome: explicitName,
+          label: label,
+          type: 'text',
+          bootstrap_syncfusion: 'bs',
+          validacoes: validacoes,
+          // modelValue: elementOptions.refs[explicitName],
+          // theme:  theme ,
+          bs_class_wrap: kind === 'relationship' ? 'd-none' : undefined,
+          entity:elementOptions.entity
+        },
+        disabled: elementOptions.disabled
+      } satisfies InputComponent;
+
+    // case 'TEXTAREA':
+    // return {
+    //     is: 'Input',
+    //     // name:  explicitName ,
+    //     props: {
+    //       nome: explicitName,
+    //       label: label,
+    //       type: 'text',
+    //       is_text_area:true,
+    //       bootstrap_syncfusion: 'bs',
+    //       validacoes: validacoes,
+    //       modelValue: elementOptions.refs[explicitName],
+    //       // theme:  theme ,
+    //     },
+    //     elementOptions.disabled
+    //   } satisfies InputComponent;
     case 'INT':
+    case 'FLOAT':
       return {
-        nome: schema.label, label: schema.label, type: 'number',
-        validacoes
-      }
+        is: 'Input',
+        // name:  explicitName ,
+        props: {
+          nome: explicitName,
+          label: label,
+          type: 'number',
+          bootstrap_syncfusion: 'bs',
+          validacoes: validacoes,
+          // modelValue: elementOptions.refs[explicitName],
+          entity:elementOptions.entity
+          // theme:  theme ,
+        },
+        disabled: elementOptions.disabled
+      } satisfies InputComponent;
 
     case 'BOOLEAN':
       return {
-        nome: schema.label, label: schema.label, type: 'checkbox',
-        validacoes
-      }
+        is: 'Input',
+        // name:  explicitName ,
+        props: {
+          nome: explicitName,
+          label: label,
+          type: 'checkbox',
+          bootstrap_syncfusion: 'bs',
+          validacoes: validacoes,
+          // modelValue: elementOptions.refs[explicitName],
+          entity:elementOptions.entity
+          // theme:  theme ,
+        },
+        disabled: elementOptions.disabled
+      } satisfies InputComponent;
 
-    case 'STRING':
+    case 'LIST':
       return {
-        nome: schema.label, label: schema.label, type: 'text', bootstrap_syncfusion: 'bs',
-        validacoes
-      }
-    case 'relationship':
+        disabled: elementOptions.disabled,
+        is: 'Items',
+        props: {
+          nome: explicitName,
+          label: label ?? explicitName,
+          // modelValue: elementOptions.refs[explicitName].value ?? '',
+          entity:elementOptions.entity
+        }
+      } satisfies ItemsComponent
+    case 'SELECT':
       return {
-        nome: schema.label, label: schema.label, type: 'text',
-        validacoes, bs_class_wrap: 'd-none'
-      }
+        is: 'SelectField',
+        disabled: elementOptions.disabled,
+        props: {
+          options: options!,
+          nome: explicitName,
+          label: label,
+          // selectedValue: elementOptions.refs[explicitName]?.value ?? '',
+          // modelValue: elementOptions.refs[explicitName],
+          entity:elementOptions.entity,
+          validacoes
+        }
+      } satisfies SelectFieldComponent
     default:
-      return {
-        nome: schema.label, label: schema.label, type: 'text',
-        validacoes
-      }
+      throw new Error("não sei o que fazer com esse kind" + kind);
+
   }
-}
-function parseCampos(formSchema: FormSchema, props_: any) {
 
-
-  let c = Object.entries(formSchema).map(([a, b]: [any, any]) => {
-console.log(a);
-
-    if (!b.kind) {
-      return parseCampos(Object.fromEntries(
-        Object.entries(b).filter(
-          c => (c[1] != null && typeof c[1] === 'object')
-        )
-
-      ), props_).flat()
-    } else {
-      const formComponent = get_element(b);
-      const props = get_props(b);
-      const ref = props_.refs[(b as any).nome]
-      const k ={
-        formComponent,
-        props,
-        ref: ref
-      }
-      // console.log(k);
-      return k
-    }
-    
-
-  })
-  return c
-  // debugger
-  // let field: keyof FormSchema;
-  // for (field in formSchema) {
-  //   const f = formSchema[field] as FormSchema
-  //   if (!f.kind) {
-  //     console.log(...parseCampos(Object.fromEntries(
-  //       Object.entries(f).filter(
-  //         c => (c[1] != null && typeof c[1] === 'object')
-  //       )
-
-  //     ), props_))
-  //   } else {
-  //     const formComponent = get_element(f);
-  //     const props = get_props(f);
-  //     const ref = props_.refs[(f as any).nome]
-  //     campos.push({
-  //       formComponent,
-  //       props,
-  //       ref: ref
-  //     })
-  //   }
+  // case 'relationship':
+  // listFields.add(explicitName);
+  //       <SelectField
+  //           name={ explicitName }
+  //   label = { ''}
+  //   options = { options! }
+  //   selectLabel = { select }
+  //   theme = { theme }
+  //   required = { required }
+  //   {...props }
+  //   />
+  //     < /FieldSet>
+  //     );
   // }
 
-  // return campos
+  //     case 'file')
+  //   return (
+  //     <FilesDropField
+  //           name= { explicitName }
+  //   label = { label }
+  //   theme = { theme }
+  //   required = { required }
+  //   {...props }> </FilesDropField>
+  //       );
+  // }
 
-}
+};
+
+
 export default defineComponent({
   props: [
-    'name',
+    'entity',
     'formSchema',
     'refs',
     'was_validated',
     'disabled',
   ],
   components: {
+    Input: Input,
+    SelectField: SelectField,
+    Items: Items,
   },
-  emits: ['refs', 'submit_result'],
+  emits: [ 'submit_result'],
   methods: {
 
   }
   ,
   setup(props, { emit }) {
 
-    const campos = parseCampos(props.formSchema, props).flat()
-    debugger
-    const nro_colunas = ref(Cache.getItem(props.name + 'nro_colunas') ?? 2)
+
+    const campos: (InputComponent | SelectFieldComponent | ItemsComponent)[] = Object.entries(
+      props.formSchema).map(
+        a => {
+          const nome = a[0];
+          const content = a[1]
+          return getFormElement(
+            {
+              name: nome,
+              formSchema: content as FormSchema,
+              refs: props.refs,
+              disabled: props.disabled,
+              entity:props.entity
+              // prefix
+            }
+          )
+        }
+      )
+
+
+
+    const nro_colunas = ref(Cache.getItem(props.entity + 'nro_colunas') ?? 2)
     function muda_nro_col() {
       if (nro_colunas.value === 6) nro_colunas.value = 1
       else {
         nro_colunas.value += 1
       }
-      Cache.setItem(props.name + 'nro_colunas', nro_colunas.value)
+      Cache.setItem(props.entity + 'nro_colunas', nro_colunas.value)
     }
     return {
       campos,
       nro_colunas,
       muda_nro_col,
+      entity:props.entity
     }
   }
 }
@@ -183,12 +283,13 @@ export default defineComponent({
       </li>
     </ul>
   </div>
-  <form @submit.prevent class="container w-100 row" :name="$props.name"
+  <form @submit.prevent class="container w-100 row" :name="$props.entity"
     :class="was_validated ? 'was-validated  row-cols-' + nro_colunas : 'row-cols-' + nro_colunas">
     <!-- {{ formSchema }} -->
     <div v-for="campo, index in campos">
-      <component :is="campo.formComponent" v-bind="campo.props" :was_validated="$props.was_validated"
-        v-model="campo.ref" :key="index" class="my-1" :disabled="$props.disabled" />
+      <component :is="campo.is" v-bind:cpn_props="campo.props" :was_validated="$props.was_validated"
+      :key="index" class="my-1" />
+      <!-- v-model="campo.props.modelValue" -->
     </div>
   </form>
   <div class="w-100 d-flex justify-content-center">

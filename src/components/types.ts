@@ -2,6 +2,9 @@
 // import { FormikHelpers } from 'formik';
 // import { fieldSizeMap, textColorMap } from './utils/theme-maps';
 
+export type OpcoesValidacoes = '' | 'required' | `minLength:${number}` | `maxLength:${number}`;
+
+
 export type Value =
   | string
   | number

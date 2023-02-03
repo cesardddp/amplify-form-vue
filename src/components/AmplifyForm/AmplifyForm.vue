@@ -22,8 +22,8 @@ import {
   FieldsProps,
   SubmitButtonProps,
 } from '../types';
-import {graphql_schema} from "../merm-types/generated_amplify_graphql_schema_interfaces";
-import { defineComponent, markRaw, reactive, ref, toRef, watch } from 'vue'
+import { graphql_schema } from "../merm-types/generated_amplify_graphql_schema_interfaces";
+import { Ref, defineComponent, markRaw, provide, reactive, ref, toRef, watch } from 'vue'
 import type { PropType } from 'vue'
 import Input from "../FormsElements/Input.vue";
 import SelectField from "../FormsElements/SelectField.vue";
@@ -71,24 +71,35 @@ export default defineComponent({
 
 
 
-    const refs = reactive(
-      Object.fromEntries(
-        Object.entries(formSchema)
-          .map((
-            [n, campo]) => {
-            const _ref = (campo as FormSchema).kind === 'LIST'
-              ? ref([''])
-              : ref(props.prefill ? props.prefill[n] : undefined)
-            return [n, markRaw(_ref)]
-          }
-          )
-      )
-    )
-    watch(refs, () => {
-      console.log(refs);
+    // const refs = reactive(
+    // Object.fromEntries(
+    Object.entries(formSchema)
+      .forEach((
+        [n, campo]) => {
+        const campo_is_LIST = (campo as FormSchema).kind === 'LIST';
+        const _ref: Ref = campo_is_LIST
+          ? ref([''])
+          : ref(props.prefill ? props.prefill[n] : undefined);
+        provide(props.form_props?.entity + '_' + n, _ref)
+        console.log('providing: ' + props.form_props?.entity + '_' + n);
 
-      emit('refs', refs)
-    }, { deep: true })
+        watch(_ref, () => {
+          console.log(
+            `watched ${props.form_props?.entity + '_' + n} is changed: ${_ref.value}`);
+          // emit('refs', refs)
+        }, { deep: campo_is_LIST }
+        )
+        // return [n, markRaw(_ref)]
+      }
+      )
+    // )
+    // )
+    // watch(refs, () => {
+    //   console.log(refs);
+
+    //   // emit('refs', refs)
+    // }, { deep: true })
+
 
     const was_validated = ref(false)
     const submited = ref<'success' | 'error' | 'waiting'>('waiting')
@@ -98,10 +109,10 @@ export default defineComponent({
       for (let k in formSchema) {
         const r = (formSchema[(k as keyof typeof formSchema)] as FormSchema)?.required;
         if (r) {
-          if (refs[k] === undefined) {
-            alert(`Por favor, preencha o campo "${k}" `)
-            erro = true;
-          }
+          // if (refs[k] === undefined) {
+          //   alert(`Por favor, preencha o campo "${k}" `)
+          //   erro = true;
+          // }
 
         }
       }
@@ -109,7 +120,7 @@ export default defineComponent({
 
       const options = {
         query: (props.mutations as any)['create' + props.form_props?.entity],
-        variables: { input: refs },
+        // variables: { input: refs },//TODO retormar o ref pra envia via graphql.api
         authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
       }
 
@@ -131,11 +142,11 @@ export default defineComponent({
 
     return {
       formSchema,
-      refs,
+      // refs,
       api,
       was_validated,
-       submited, disabled: props.disabled, submit_button: props.submitbutton,
-      name: props.form_props.entity
+      submited, disabled: props.disabled, submit_button: props.submitbutton,
+      entity: props.form_props.entity
     }
   }
 }
@@ -144,8 +155,8 @@ export default defineComponent({
 
 
 <template>
-<!-- was_validated: {{ was_validated }} -->
-  <BuildForm :name="name" :formSchema="formSchema" :refs="refs" :was_validated="was_validated" :disabled="disabled" />
+  <!-- was_validated: {{ was_validated }} -->
+  <BuildForm :entity="entity" :formSchema="formSchema" :was_validated="was_validated" :disabled="disabled" />
   <SubmitButton class="text-center" v-if="submited === 'waiting' || submited === 'error'" @click="api" type="submit"
     v-bind:submit_props="submit_button" />
 </template>

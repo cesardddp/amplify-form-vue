@@ -1,51 +1,13 @@
 <script lang="ts">
-// export interface FieldProps {// extends HTMLProps<HTMLInputElement> {
-//     nome: string;
-//     label?: string;
-//     labelCentered?: boolean;
-//     // fieldSize?: FieldSize;
-//     // theme?: FormTheme;
-//     isSubmitting?: boolean;
-//     selectedValue?: string;
-// }
+import { PropType, Ref, computed, defineComponent, inject, ref, toRef } from "vue";
+import { OpcoesValidacoes } from "../types";
 
-// export interface Option {
-//     label?: string;
-//     value: string;
-// }
-// export interface SelectFieldProps {
-//     options: {label?: string;
-//     value: string;}[],
-//     nome: string,
-//     label?: string,
-//     labelCentered?: boolean,
-//     isSubmitting?: boolean,
-//     selectedValue?: string,
-//     // fieldSize?: FieldSize;
-//     // theme?: FormTheme;
-//     modelValue: string | number | boolean
-
-// }
-
-// interface Props extends SelectFieldProps {
-// }
-</script>
-<script setup lang="ts">
-import { computed, ref, toRef } from "vue";
-// import { SelectFieldProps as SelectFieldPropsSource } from "../../types";
-
-// interface SelectFieldProps extends SelectFieldPropsSource { }
-
-
-
-
-type OpcoesValidacoes = 'required' | `minLength:${number}` | `maxLength:${number}`;
-
-const props = withDefaults(defineProps<{
+export type SelectProps = {
     options: {
         label?: string;
         value: string;
     }[],
+    entity:string;
     nome: string,
     label?: string,
     labelCentered?: boolean,
@@ -53,27 +15,98 @@ const props = withDefaults(defineProps<{
     selectedValue?: string,
     // fieldSize?: FieldSize;
     // theme?: FormTheme;
-    modelValue?: string | number | boolean,
+    // modelValue?: Ref<string | number | boolean>,
     validacoes: OpcoesValidacoes[];
 
-}>(),
-    {
-        // bootstrap_syncfusion: 'bs',
-        // type: 'select',
-        // bs_class_wrap: '',
-        // bs_class_input: '',
-        // bs_class_label: '',
-    })
-const emit = defineEmits(['update:modelValue'])
+}
 
-const value = computed({
-    get() {
-        return props.modelValue
+
+export default defineComponent({
+    props: {
+        cpn_props: {
+            type: Object as PropType<SelectProps>,
+            default: {
+                bootstrap_syncfusion: 'bs',
+                type: 'select',
+                bs_class_wrap: '',
+                bs_class_input: '',
+                bs_class_label: '',
+            }
+        }
     },
-    set(value) {
-        emit('update:modelValue', value)
+    emits: ['update:modelValue'],
+    setup(props, ctx) {
+        let _ref = inject(props.cpn_props.entity + '_' + props.cpn_props.nome) as Ref
+        // debugger
+        console.log('injecting: ' + props.cpn_props.entity + '_' + props.cpn_props.nome);
+        const value = computed({
+            get() {
+                // return props.cpn_props.modelValue
+                return _ref.value
+            },
+            set(value) {
+                _ref.value=value
+                // ctx.emit('update:modelValue', value)
+            }
+        })
+        type Validacoes = {// TODO tirar isso para fora, como syncfusion
+            required: boolean;
+            minlength?: number;
+            maxlength?: number;
+        }
+        const validacao = computed(() => {
+            let valid_feedback_msg: string[] = [];
+            let invalid_feedback_msg: string[] = [];
+            let validou = false;
+            let validacoes: Validacoes = {
+                required: false,
+                minlength: undefined,
+                maxlength: undefined,
+            }
+            props.cpn_props.validacoes.forEach(v => {
+                switch (v) {
+                    case 'required':
+                        invalid_feedback_msg.push('Por favor, preencha esse campo!')
+                        validacoes.required = true
+                        break;
+                    case v.match(/minlength:[0-9]*/)?.input:
+                        debugger
+                        validacoes.minlength = parseInt(
+                            v.replace("minlength:", '')
+                        )
+                        break;
+                    case v.match(/maxlength:[0-9]*/)?.input:
+                        debugger
+                        validacoes.maxlength = parseInt(
+                            v.replace("maxlength:", '')
+                        )
+                        break;
+                    default:
+                        throw new Error("Validador Inválido: " + v);
+                }
+            })
+
+            return {
+                valid_feedback_msg,
+                invalid_feedback_msg,
+                validacoes
+            }
+        })
+        return {
+            nome: props.cpn_props.nome,
+            label: props.cpn_props.label,
+            labelCentered: props.cpn_props.labelCentered,
+            isSubmitting: props.cpn_props.isSubmitting,
+            selectedValue: props.cpn_props.selectedValue,
+            // modelValue: props.cpn_props.modelValue,
+            options: props.cpn_props.options,
+            validacao,
+            value
+        }
+
     }
 })
+
 
 // debugger
 //   fieldSize,
@@ -86,7 +119,7 @@ const value = computed({
 
 // }) => {
 //   const fieldname = rest.name;
-//   const safeSize = props.fieldSize
+//   const safeSize = props.selectfieldSize
 //     ? fieldSizeMap.get(props.fieldSize)
 //       ? props.fieldSize
 //       : undefined
@@ -139,49 +172,6 @@ const value = computed({
 //     validate,
 //     ...rest,
 // });
-type Validacoes = {// TODO tirar isso para fora, como syncfusion
-    required: boolean;
-    minlength?: number;
-    maxlength?: number;
-}
-const validacao = computed(() => {
-    let valid_feedback_msg: string[] = [];
-    let invalid_feedback_msg: string[] = [];
-    let validou = false;
-    let validacoes: Validacoes = {
-        required: false,
-        minlength: undefined,
-        maxlength: undefined,
-    }
-    props.validacoes.forEach(v => {
-        switch (v) {
-            case 'required':
-                invalid_feedback_msg.push('Por favor, preencha esse campo!')
-                validacoes.required = true
-                break;
-            case v.match(/minlength:[0-9]*/)?.input:
-                debugger
-                validacoes.minlength = parseInt(
-                    v.replace("minlength:", '')
-                )
-                break;
-            case v.match(/maxlength:[0-9]*/)?.input:
-                debugger
-                validacoes.maxlength = parseInt(
-                    v.replace("maxlength:", '')
-                )
-                break;
-            default:
-                throw new Error("Validador Inválido: " + v);
-        }
-    })
-
-    return {
-        valid_feedback_msg,
-        invalid_feedback_msg,
-        validacoes
-    }
-})
 
 </script>
 <template>
@@ -204,10 +194,12 @@ const validacao = computed(() => {
 
     <!-- :styles="{{ customStyles }}" -->
     <!-- </FieldWithError> -->
+
+
     <div class="form-floating">
-        <select class="form-select" :name="nome" :id="nome" v-model="value" aria-label="Floating label select" 
-        :required="validacao.validacoes.required">
-            <option v-if="!modelValue" selected value="">Selecione uma opção...</option>
+        <select class="form-select" :name="nome" :id="nome" v-model="value" aria-label="Floating label select"
+            :required="validacao.validacoes.required">
+            <option   selected value="">Selecione uma opção...</option>
             <option v-for="op in options" :value="op.value">{{ op.label ?? op.value }}</option>
         </select>
         <label :for="nome" class="form-label">{{ label?? nome }}</label>

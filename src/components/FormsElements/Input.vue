@@ -1,47 +1,14 @@
-<script lang="ts">
-// export interface InputFieldProps {
-//     nome: string;
-//     label?: string;
-//     type?: 'text' | 'number' | 'checkbox',
-//     disabled?: boolean;
-//     bs_class_wrap?: string;
-//     bs_class_input?: string;
-//     bs_class_label?: string;
-//     bootstrap_syncfusion?: 'bs' | 'sf';
-//     placeholder?: string,
-//     // checkbox
-//     //sf
-//     cssSFClass?: string | "e-primary" | "e-success" | "e-info" | "e-warning" | "e-danger";
-//     //number
-//     step?: string,
-//     //sf
-//     currency?: 'BRL' | 'EUR' | 'USD', // TODO adicionar mais opções https://pt.wikipedia.org/wiki/ISO_4217
-//     //
-//     //sf 
-//     is_text_area?: boolean,
-//     floatLabelType?: "Auto" | "Always" | "Never";
-//     // default: string | number | boolean;
-
-
-// }
-
-// interface CmpntProps extends InputFieldProps {
-//     modelValue: any// string //| number | boolean
-// }
-</script>
-<script setup lang="ts">
-import { ref, computed } from "vue";
-
-
-
-//html validacao nativa https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation
-type OpcoesValidacoes = 'required' | `minLength:${number}` | `maxLength:${number}`;
+<script  lang="ts">
+import { Input } from "@syncfusion/ej2-inputs";
+import { ref, computed, PropType, defineComponent,defineEmits, inject, Ref } from "vue";
+import { OpcoesValidacoes, SubmitButtonProps } from "../types";
 type Validacoes = {
     required: boolean;
     minlength?: number;
     maxlength?: number;
 }
-const props = withDefaults(defineProps<{
+export type InputProps = {
+    entity:string;
     nome: string;
     label?: string;
     type?: 'text' | 'number' | 'checkbox',
@@ -51,7 +18,7 @@ const props = withDefaults(defineProps<{
     bs_class_label?: string;
     bootstrap_syncfusion?: 'bs' | 'sf';
     placeholder?: string;
-    validacoes: OpcoesValidacoes[];
+    validacoes?: OpcoesValidacoes[];
     // checkbox
     //sf
     cssSFClass?: string | "e-primary" | "e-success" | "e-info" | "e-warning" | "e-danger";
@@ -64,114 +31,163 @@ const props = withDefaults(defineProps<{
     is_text_area?: boolean,
     floatLabelType?: "Auto" | "Always" | "Never";
     // default: string | number | boolean;
-    modelValue: any// string //| number | boolean
+    // modelValue: any// string //| number | boolean
 
-}>(),
-    {
-        bootstrap_syncfusion: 'bs',
-        type: 'text',
-        bs_class_wrap: '',
-        bs_class_input: '',
-        bs_class_label: '',
-    })
-const emit = defineEmits(['update:modelValue'])
-
-const value = computed({
-    get() {
-        return props.modelValue
-    },
-    set(value) {
-        emit('update:modelValue', value)
-    }
-})
-const validacao = computed(() => {
-    let valid_feedback_msg: string[] = [];
-    let invalid_feedback_msg: string[] = [];
-    let validou = false;
-    let validacoes: Validacoes = {
-        required: false,
-        minlength: undefined,
-        maxlength: undefined,
-    }
-    props.validacoes.forEach(v => {
-        switch (v) {
-            case 'required':
-                invalid_feedback_msg.push('Por favor, preencha esse campo!')
-                validacoes.required = true
-                break;
-            case v.match(/minlength:[0-9]*/)?.input:
-                debugger
-                validacoes.minlength = parseInt(
-                    v.replace("minlength:", '')
-                )
-                break;
-            case v.match(/maxlength:[0-9]*/)?.input:
-                debugger
-                validacoes.maxlength = parseInt(
-                    v.replace("maxlength:", '')
-                )
-                break;
-            default:
-                throw new Error("Validador Inválido: " + v);
-        }
-    })
-
-    return {
-        valid_feedback_msg,
-        invalid_feedback_msg,
-        validacoes
-    }
-})
-const cssSFClass = computed(
-    () => {
-        const cssSyncFusion = props.cssSFClass ? props.cssSFClass : 'e-primary';
-
-        return (cssSyncFusion + ' ' + props.bs_class_input).trim().replace(/ +(?= )/g, '')
-    }
-    //a regex -> https://stackoverflow.com/questions/3286874/remove-all-multiple-spaces-in-javascript-and-replace-with-single-space
-)
-const bs_class_wrap = computed(() => {
-    let base_wrap = '';
-
-    switch (props.type) {
-        case 'checkbox':
-            base_wrap = 'form-checkbox'
-            break;
-        case 'text':
-        case 'number':
-            base_wrap = 'form-floating'
-            break;
-
-        default:
-            break;
-    }
-    return base_wrap + ' ' + props.bs_class_wrap
 }
-)
-const bs_class_label = computed(
-    () => (props.type === 'checkbox' ? 'form-check-label' : '') + ' ' + props.bs_class_label
-)
-const bs_class_input = computed(
-    () => {
-        let base_input = '';
-        switch (props.type) {
-            case 'checkbox':
-                base_input = 'form-check-input'
-                break;
-            case 'text':
-            case 'number':
-                base_input = 'form-control'
-                break;
+export default defineComponent({
+    props: {
+        cpn_props: {
+            type: Object as PropType<InputProps>,
+            default: {
+                bootstrap_syncfusion: 'bs',
+                type: 'text',
+                bs_class_wrap: '',
+                bs_class_input: '',
+                bs_class_label: '',
+            }
+        },
+    },
+    emits:['update:modelValue'],
+    setup(props, ctx) {
+        let _ref = inject(props.cpn_props.entity+'_'+props.cpn_props.nome) as Ref
+        // debugger
+        console.log('injecting: '+props.cpn_props.entity+'_'+props.cpn_props.nome);
+        
+        const value = computed({
+            get() {
+                // return props.cpn_props.modelValue
+                return _ref.value
+            },
+            set(value) {
+                _ref.value = value
+                // ctx.emit('update:modelValue', value)
+            }
+        })
+        const validacao = computed(() => {
+            let valid_feedback_msg: string[] = [];
+            let invalid_feedback_msg: string[] = [];
+            let validou = false;
+            let validacoes: Validacoes = {
+                required: false,
+                minlength: undefined,
+                maxlength: undefined,
+            }
+            props.cpn_props.validacoes?.forEach(v => {
+                switch (v) {
+                    case 'required':
+                        invalid_feedback_msg.push('Por favor, preencha esse campo!')
+                        validacoes.required = true
+                        break;
+                    case v.match(/minlength:[0-9]*/)?.input:
+                        debugger
+                        validacoes.minlength = parseInt(
+                            v.replace("minlength:", '')
+                        )
+                        break;
+                    case v.match(/maxlength:[0-9]*/)?.input:
+                        debugger
+                        validacoes.maxlength = parseInt(
+                            v.replace("maxlength:", '')
+                        )
+                        break;
+                    default:
+                        throw new Error("Validador Inválido: " + v);
+                }
+            })
 
-            default:
-                break;
+            return {
+                valid_feedback_msg,
+                invalid_feedback_msg,
+                validacoes
+            }
+        })
+        const cssSFClass = computed(
+            () => {
+                const cssSyncFusion = props.cpn_props.cssSFClass ? props.cpn_props.cssSFClass : 'e-primary';
+
+                return (cssSyncFusion + ' ' + props.cpn_props.bs_class_input).trim().replace(/ +(?= )/g, '')
+            }
+            //a regex -> https://stackoverflow.com/questions/3286874/remove-all-multiple-spaces-in-javascript-and-replace-with-single-space
+        )
+        const bs_class_wrap = computed(() => {
+            let base_wrap = '';
+
+            switch (props.cpn_props.type) {
+                case 'checkbox':
+                    base_wrap = 'form-checkbox'
+                    break;
+                case 'text':
+                case 'number':
+                    base_wrap = 'form-floating'
+                    break;
+
+                default:
+                    break;
+            }
+            return base_wrap + ' ' + props.cpn_props.bs_class_wrap
         }
-        return base_input + ' ' + props.bs_class_input
-    }
-)
-const safeFieldSize = ref('md');//fieldSizeMap.get(fieldSize) ? fieldSize : 'md';
+        )
+        const bs_class_label = computed(
+            () => (props.cpn_props.type === 'checkbox' ? 'form-check-label' : '') + ' ' + props.cpn_props.bs_class_label
+        )
+        const bs_class_input = computed(
+            () => {
+                let base_input = '';
+                switch (props.cpn_props.type) {
+                    case 'checkbox':
+                        base_input = 'form-check-input'
+                        break;
+                    case 'text':
+                    case 'number':
+                        base_input = 'form-control'
+                        break;
+
+                    default:
+                        break;
+                }
+                return base_input + ' ' + props.cpn_props.bs_class_input
+            }
+        )
+        const safeFieldSize = ref('md');//fieldSizeMap.get(fieldSize) ? fieldSize : 'md';        
+        return {
+            value,
+            validacao,
+            bs_class_wrap,
+            bs_class_input,
+            bs_class_label,
+            type:props.cpn_props.type,
+            placeholder: props.cpn_props.bootstrap_syncfusion,
+            bootstrap_syncfusion: props.cpn_props.bootstrap_syncfusion,
+            nome: props.cpn_props.nome,
+            step: props.cpn_props.step,
+            disabled: props.cpn_props.disabled,
+            label: props.cpn_props.label,
+            cssSFClass:props.cpn_props.cssSFClass,
+            is_text_area:props.cpn_props.is_text_area,
+            floatLabelType:props.cpn_props.floatLabelType,   
+            currency:props.cpn_props.currency
+        }
+    },
+})
+
+
+
 </script>
 <template>
+<!-- <p>type:{{type}}</p> -->
+<!-- <p>placeholder:{{placeholder}}</p> -->
+<!-- <p>bootstrap_syncfusion:{{bootstrap_syncfusion}}</p> -->
+<!-- <p>nome:{{nome}}</p> -->
+<!-- <p>step:{{step}}</p> -->
+<!-- <p>disabled:{{disabled}}</p> -->
+<!-- <p>label:{{label}}</p> -->
+<!-- <p>bs_class_wrap:{{bs_class_wrap}}</p> -->
+<!-- <p>bs_class_input:{{bs_class_input}}</p> -->
+<!-- <p>bs_class_label:{{bs_class_label}}</p> -->
+<!-- <p>cssSFClass:{{cssSFClass}}</p> -->
+<!-- <p>is_text_area:{{is_text_area}}</p> -->
+<!-- <p>floatLabelType:{{floatLabelType}}</p> -->
+<!-- <p>currency:{{currency}}</p> -->
     <div v-if="bootstrap_syncfusion === 'bs'">
         <div :class="bs_class_wrap">
             <input :class="bs_class_input" v-model="value" :type='type' :id="nome" :name="nome"
