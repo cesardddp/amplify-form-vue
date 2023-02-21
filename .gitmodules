@@ -1,3 +1,9 @@
 [submodule "src/merm-types"]
 	path = src/merm-types
 	url = https://github.com/meuCPD-Solucoes-Tecnologicas/merm-types.git
+[submodule "merm-schema"]
+	path = merm-schema
+	url = https://github.com/meuCPD-Solucoes-Tecnologicas/merm-schema
+[submodule "src/merm-schema"]
+	path = src/merm-schema
+	url = https://github.com/meuCPD-Solucoes-Tecnologicas/merm-schema
