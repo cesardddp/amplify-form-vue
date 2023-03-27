@@ -28,7 +28,7 @@ import App from './AppToTest.vue'
 
 
 // enableRipple(true);
-// registerLicense("ORg4AjUWIQA/Gnt2VVhkQlFadVdJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxQdkRhXH5dc3NXQmdaVEM=");
+registerLicense("ORg4AjUWIQA/Gnt2VFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hSn5QdEJjXnpfdXRWQWZf");
 createApp(App)
     .component(TextBoxPlugin.name, TextBoxComponent)
     .component(CheckBoxPlugin.name, CheckBoxComponent)
