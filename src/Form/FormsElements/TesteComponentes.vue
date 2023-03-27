@@ -1,14 +1,14 @@
 <script setup lang="ts" >
 import TextField from "./TextField.vue";
 import TextAreaField, { TextAreaFieldProps } from "./TextAreaField.vue";
-import SubmitButton from "./SubmitButton.vue";
+import SubmitButton, { SubmitButtonProps } from "./SubmitButton.vue";
 import SelectField from "./SelectField.vue";
 import Items from "./Items.vue";
 import { ref, reactive, markRaw, watch, watchEffect } from "vue";
 import Input from "./Input.vue";
 import Controlador from "./controlador.vue";
 import _ from "lodash";
-import { SubmitButtonProps } from "../types";
+// import { SubmitButtonProps } from "../types";
 
 const baseFieldProps = {
     nome: 'base',
@@ -149,7 +149,7 @@ const submitButtonFSProps: SubmitButtonProps = { ...submitButtonProps, title: "S
 
 const itensProps = {
     nome: "Itens",
-    label:"Itens Label",
+    label: "Itens Label",
     disabled: false,
     bs_class_wrap: '',
     bs_class_input: '',
@@ -299,7 +299,8 @@ const atualiza_comentario = (cp: any) => {
 <template>
     <ul>
         <span class="fs-5"> // TODO</span>
-        <li>substituir os components html nativos por componentes BS5 e SyncFusion <i class="bi bi-check fs-3 text-success"></i></li>
+        <li>substituir os components html nativos por componentes BS5 e SyncFusion <i
+                class="bi bi-check fs-3 text-success"></i></li>
         <li>Adequar código de pré-preenchimento (react->vue) (pra update)</li>
         <li>Alterar código para adicionar validção do BS5 e SyncFusion</li>
     </ul>
@@ -315,8 +316,7 @@ const atualiza_comentario = (cp: any) => {
                     </button>
                 </h2>
                 <div :id="`collapse-components-${c.nome}`" class="accordion-collapse collapse"
-                    :aria-labelledby="`heading-components-${c.nome}`"
-                    :data-bs-parent="`#accordion-components-${c.nome}`">
+                    :aria-labelledby="`heading-components-${c.nome}`" :data-bs-parent="`#accordion-components-${c.nome}`">
                     <div class="accordion-body row">
 
                         <ul class="list-group list-group-flush col-lg-3 col-sm-12 d-flex flex-column">
@@ -372,10 +372,6 @@ const atualiza_comentario = (cp: any) => {
     <!-- <SubmitButton v-bind="{title: "Submit button",bootstrap_syncfusion:'sf'}/> -->
     <!-- <SelectField v-bind="selectFieldProps" /> -->
     <!-- <NumberField v-bind="numberField" /> -->
-
-
-
-
 </template>
 <style>
 .teste {

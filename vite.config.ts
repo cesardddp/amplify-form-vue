@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import VueMacros from 'unplugin-vue-macros/vite'
 import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [VueMacros({
+    plugins: {
+      vue: vue(),
+    },
+  }),],
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
@@ -54,5 +59,5 @@ export default defineConfig({
         }
       }
     }
-  },
+  }
 })
