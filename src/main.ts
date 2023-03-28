@@ -14,7 +14,14 @@ import { registerLicense } from "@syncfusion/ej2-base";
 // import { enableRipple } from '@syncfusion/ej2-base';
 import { NumericTextBoxComponent, NumericTextBoxPlugin } from '@syncfusion/ej2-vue-inputs';
 import { GridPlugin, GridComponent, ColumnsDirective, ColumnsPlugin, ColumnDirective, ColumnPlugin } from "@syncfusion/ej2-vue-grids";
-
+import { 
+    TabPlugin,
+    TabItemPlugin,
+    TabItemsPlugin,
+    TabComponent,
+TabItemDirective,
+TabItemsDirective,
+} from "@syncfusion/ej2-vue-navigations";
 //
 
 
@@ -37,4 +44,7 @@ createApp(App)
     .component(GridPlugin.name, GridComponent)
     .component(ColumnsPlugin.name, ColumnsDirective)
     .component(ColumnPlugin.name, ColumnDirective)
+    .component(TabPlugin.name,TabComponent)
+    .component(TabItemPlugin.name,TabItemDirective)
+    .component(TabItemsPlugin.name,TabItemsDirective)
     .mount('#app')

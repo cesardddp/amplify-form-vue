@@ -1,5 +1,5 @@
 <script setup lang="ts" >
-import { computed, inject, markRaw, PropType, reactive, ref, shallowRef, toRef, watch } from "vue";
+import { computed, ComputedRef, inject, markRaw, PropType, reactive, Ref, ref, shallowRef, toRef, watch } from "vue";
 import Form from "./Form.vue";
 import { FormSchema, FormSchemaValue } from "./parse-introspection";
 import { FormStateHandler as GlobalFormStateHandler } from "./formStorage";
@@ -17,9 +17,22 @@ if (!input) throw new Error("Input Form não encontrado! Form.vue error");
 
 // multiple logic:
 class Inner_forms_handler {
-    form_components_props = ref(
-        new Map<number, FormProps|null>()
-    );
+    form_components_props = reactive(
+        new Map<number, FormProps | null>()
+    )
+    change_tracker_form_components_props = 1
+
+    inner_form_list = computed(() => {
+        this.change_tracker_form_components_props = 1;
+        const k = [
+            ...this.form_components_props.entries()
+        ].filter(
+            ([key, form]) => form != null
+        )
+        return k
+    })
+
+    selected = ref(0)
 
     constructor() {
         let index_encontrados: string[] = []
@@ -38,16 +51,15 @@ class Inner_forms_handler {
                 //     // this.novo_item_form()
             }
         }
-        this.form_components_props.value.size || this.set_form_item()
+        this.form_components_props.size || this.set_form_item()
     }
 
     index_disponivel() {
-        let [key,value] = [-1,undefined as unknown]
-        for([key,value] of this.form_components_props.value.entries()){
-            if(value===null)return key
+        let [key, value] = [-1, undefined as unknown]
+        for ([key, value] of this.form_components_props.entries()) {
+            if (value === null) return key
         }
-        return key+1
-        return this.form_components_props.value.size
+        return key + 1
     }
     set_form_item() {
         const index_key = this.index_disponivel();
@@ -73,35 +85,49 @@ class Inner_forms_handler {
         })
 
 
-        this.form_components_props.value.set(index_key, form_prop);
+        this.form_components_props.set(index_key, form_prop);
     }
 
     novo_item_form() {
         this.set_form_item()
+        this.selected.value = this.index_disponivel() - 1
+        this.change_tracker_form_components_props += 1
     }
     remove_item(index_key: number) {
-        this.form_components_props.value.get(index_key)!
+        this.form_components_props.get(index_key)!
             .form_fields_gbl_state_unseters!
             .flat()
             .map(i => {
-                if(Array.isArray(i))throw new Error("flat não funcionou");
+                if (Array.isArray(i)) throw new Error("flat não funcionou");
                 i()
             })
-        this.form_components_props.value.set(index_key, null)
-        // this.form_components_props.value.delete(index_key); //tiro do map de items
+        this.form_components_props.set(index_key, null)
+        this.change_tracker_form_components_props += 1
+        // this.form_components_props.delete(index_key); //tiro do map de items
     }
+
 }
 let inner_forms_handler: Inner_forms_handler
+let formulario_em_visualizacao: ComputedRef<FormProps>
+
 if (input.multiple) {
     inner_forms_handler = new Inner_forms_handler()
+    formulario_em_visualizacao = computed(
+        () => inner_forms_handler.form_components_props.get(inner_forms_handler.selected.value)!
+    )
+
 }
+
 function get_5_form_fields(introspect_caminho: string) {
     const ppp = [
         ...global_form_state_handler.state_as_Map.keys()
     ].filter(i => i.startsWith(introspect_caminho)).slice(0, 5)
         .map(k => [k.split('.').pop(), global_form_state_handler.state_as_Map.get(k)?.value])
     // debugger
-    return ppp
+    if (!ppp || ppp.length <= 0) return
+
+    const first = ppp[0]
+    return first[1]
 }
 </script>
 <template>
@@ -113,44 +139,41 @@ function get_5_form_fields(introspect_caminho: string) {
         form_fields_gbl_state_unseters
     }" />
     <article v-else>
+        <!-- Nav tabs -->
 
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li v-for="[key, form], index in inner_forms_handler.inner_form_list.value" class="nav-item position-relative"
+                role="presentation">
+                <button @click="() => inner_forms_handler.remove_item(key)" type="button" role="button"
+                    class="z-3 position-absolute top-0 start-0 translate-middle badge border border-light rounded-circle bg-danger ">
+                    x
+                </button>
+                <button class="nav-link" :id="`${form?.introspection_caminho}-tab`" data-bs-toggle="tab"
+                    :data-bs-target="`#${form?.introspection_caminho}`" type="button" role="tab"
+                    :aria-controls="`${form?.introspection_caminho}`" aria-selected="false">{{
+                        `${form?.introspection_caminho}` }}</button>
 
-        <div v-for="[key, form], index in inner_forms_handler.form_components_props.value.entries()" :key="key"
-            class="accordion accordion-flush border border-top-0 rounded m-1 px-1 pb-1" :id="introspection_caminho + key">
-            <div v-if="form" class="accordion-item" :key="introspection_caminho + key">
-                <h2 class="accordion-header position-relative" id="headingOne">
-                    <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse"
-                        :data-bs-target="'#' + index" aria-expanded="false" :aria-controls="index.toString()">
-                        {{ index }} -
+            </li>
+            <li class="nav-item nav-link " type="button" role="tab" aria-selected="true">
+                <i @click="() => inner_forms_handler.novo_item_form()" type="button" class="bi bi-plus">
+                </i>
+            </li>
+        </ul>
 
-                        <span v-for="[k, v] in get_5_form_fields(form.introspection_caminho)"
-                            class="badge border text-dark border-success fs-6 mx-1">
-                            {{ k }}: <span> {{ v ? v : 'vazio' }} </span>
-                        </span>
-
-
-                    </button>
-                    <button @click="() => inner_forms_handler.remove_item(key)" type="button" role="button"
-                        class="btn-close fs-6 z-3 position-absolute top-0 start-0 border rounded translate-middle bg-danger">
-                    </button>
-                </h2>
-                <div :id="index.toString()" class="accordion-collapse collapse" aria-labelledby="headingOne"
-                    :data-bs-parent="'#' + introspection_caminho + key">
-                    <div class="accordion-body">
-                        <div class="align-middle col-1 d-flex align-items-center text-6">
-                        </div>
-                        <Form v-bind="form" :key="form.introspection_caminho" />
-                    </div>
-                </div>
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <div v-for="[key, form], index in inner_forms_handler.inner_form_list.value" class="tab-pane"
+                :id="`${form?.introspection_caminho}`" role="tabpanel"
+                :aria-labelledby="`${form?.introspection_caminho}-tab`">
+                <!-- {{ `${form?.introspection_caminho}` }}  -->
+                <Form v-bind="form!" :key="form!.introspection_caminho" />
             </div>
         </div>
 
+        <!-- <Form v-bind="form!" :key="form!.introspection_caminho" /> -->
 
-        <div class="text-end">
-            <i @click="() => inner_forms_handler.novo_item_form()" type="button"
-                class="border rounded bg-success border-success text-center text-light bi bi-plus m-2 me-3 px-2">
-                adicionar {{ field_name }}
-            </i>
-        </div>
+
+
     </article>
 </template>

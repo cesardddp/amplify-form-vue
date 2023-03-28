@@ -63,12 +63,12 @@ function testeGetTypeFromSchema() {
 }
 //////////////////////////////////////////////
 const oldEntitysToTest = [
-    'CreateCampoInput',
-    'CreateTelaInput',
-    'CreateApiInput',
-    'CreateModelInput',
-    'CreateViewInput',
-    'CreateModuloInput',
+    'Campo',
+    'Tela',
+    'Api',
+    'Model',
+    'View',
+    'Modulo',
 ]
 const test_parse_schema = (entitys_list: string[], _schema: IntrospectionSchema) => {
     const result = entitys_list.map(entity_name => {
