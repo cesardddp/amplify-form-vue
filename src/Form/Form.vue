@@ -1,8 +1,8 @@
 <script setup lang="ts" >
-import { PropType, reactive } from "vue";
+import { PropType, reactive, ref } from "vue";
 import Form from "./Form.vue";
-import { FormSchema } from "./parse-introspection";
-import { FormProps } from "./types";
+import { FormSchemasMap } from "./parse-introspection";
+import { FormProps } from "./formTypes";
 import FormHandler from "./FormHandler.vue";
 
 const props = defineProps<FormProps>()
@@ -18,34 +18,25 @@ const sub_forms = reactive({
         this.filho = filho === this.filho ? undefined : filho
     }
 })
-console.log();
+
+const set_opacity = ref(false)
 
 </script>
 <template>
-    <!-- META INFO -->
-    <!-- <h4>{{ form_name }}</h4> -->
-    <!-- <span class="badge bg-danger mx-1"> {{ input.multiple ? 'multiple' : 'não-multiple' }} </span> -->
-    <!-- <p v-if="input.sub_forms.length > 0"> -->
-    <!-- subforms: -->
-    <!-- <span class="badge bg-primary mx-1" v-for="filho in input.sub_forms"> -->
-    <!-- {{ filho.name }} -->
-    <!-- </span> -->
-    <!-- </p> -->
-
-    <!-- MULTIPLE ITEMS -->
     <!-- ITEM FIELDS -->
-    <component v-for="form_field, index in input.form_fields" :is="form_field.form_component_info.is"
-        v-bind="form_field.form_component_info.props"
-        v-bind:introspect_caminho="`${introspection_caminho}.${form_field.nome}`"
-        :key="form_field.form_component_info.props.introspect_caminho"
-        v-bind:form_fields_gbl_state_unseters="form_fields_gbl_state_unseters">
-    </component>
+    <div role="form" :class="set_opacity ? 'opacity-50' : ''">
+        <div @click="set_opacity = false">
+            <component v-for="form_field, index in input.form_fields" :is="form_field.form_component_info.is"
+                v-bind="form_field.form_component_info.props"
+                v-bind:introspect_caminho="`${introspection_caminho}.${form_field.nome}`"
+                :key="form_field.form_component_info.props.introspect_caminho"
+                v-bind:form_fields_gbl_state_unseters="form_fields_gbl_state_unseters">
+            </component>
+        </div>
+    </div>
 
-    <!-- ITEM SUBFORMS -->
-    <article v-if="sub_forms.nav_forms.length" id="subforms">
-
-
-        <!-- SUBFORM NAVBAR -->
+    <!-- SUBFORM NAVBAR -->
+    <div v-if="sub_forms.nav_forms.length" @click="set_opacity = true">
         <nav class="nav nav-tabs mt-1" id="sub_forms" role="tablist">
             <li class="nav-item" role="presentation" v-for="filho in sub_forms.nav_forms">
                 <button class="nav-link" @click="sub_forms.select(filho)" :id="filho.name + '-tab'" data-bs-toggle="tab"
@@ -56,16 +47,14 @@ console.log();
             </li>
         </nav>
 
-        <!-- CURRENT SUBFORM SELECTED -->
-        <section v-if="sub_forms.filho" class="col border border-top-0 p-1">
-            <div class="tab-pane active" :id="sub_forms.filho.name" role="tabpanel"
-                :aria-labelledby="sub_forms.filho.name + '-tab'">
-                <FormHandler :introspection_caminho="`${introspection_caminho}.${sub_forms.filho.name}`"
-                    :form_name="sub_forms.filho.type" :key="sub_forms.filho.type" :is_multipleform_item="true"
-                    :field_name="sub_forms.filho.name"
-                    :form_fields_gbl_state_unseters="form_fields_gbl_state_unseters"
-                    />
-            </div>
-        </section>
-    </article>
+    </div>
+    <!-- CURRENT SUBFORM SELECTED -->
+    <section v-if="sub_forms.filho" class="col border border-top-0 p-1" :class="set_opacity ? 'opacity-100' : 'opacity-50'">
+        <div class="tab-pane active" :id="sub_forms.filho.name" role="tabpanel"
+            :aria-labelledby="sub_forms.filho.name + '-tab'">
+            <FormHandler :introspection_caminho="`${introspection_caminho}.${sub_forms.filho.name}`"
+                :form_name="sub_forms.filho.type" :key="sub_forms.filho.type" :is_multipleform_item="true"
+                :field_name="sub_forms.filho.name" :form_fields_gbl_state_unseters="form_fields_gbl_state_unseters" />
+        </div>
+    </section>
 </template>
