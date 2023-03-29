@@ -1,14 +1,13 @@
-import { Arg, Field, IntrospectionSchema, Kind, OfTypeClass, Type, TypeElement } from "../introspectionSchemaInterface";
+import { Arg, IntrospectionSchema, Kind, OfTypeClass, TypeElement } from "../introspectionSchemaInterface";
 // import { OpcoesValidacoes } from "../../merm-schema/custom-types";
 import Input from "./FormsElements/Input.vue";
 import Items from "./FormsElements/Items.vue";
 import SelectField from "./FormsElements/SelectField.vue";
-import { markRaw, Ref, ref, shallowRef, watch } from "vue";
+import { markRaw } from "vue";
 import { FormStateHandler } from "./formStorage";
 import type { InputProps, ItemsProps, SelectProps } from './FormsElements/elementsTypes'
 
 export type OpcoesValidacoes = '' | 'required' | `minLength:${number}` | `maxLength:${number}`;
-
 
 type InputComponent = {
     is: typeof Input,
@@ -32,10 +31,10 @@ export function getTypesFromSchema(introspectionSchema: IntrospectionSchema) {
     return types
 }
 export function parseNonScalar(type: OfTypeClass) {
-    //não é esperado scalar aqui
+    //não é esperado SCALAR aqui, excete ENUMs
     let is_list = false;
-    let is_non_null = false; // cobre o caso field: Type! e list_field: [Type]!
-    let is_list_item_non_null = false; // cobre o caso field: [Type!]
+    let is_non_null = false; // cobre o caso `field: Type!` e `list_field: [Type]!`
+    let is_list_item_non_null = false; // cobre o caso `field: [Type!]`
     const recursion = (_type: OfTypeClass): OfTypeClass => {
         switch (_type.kind) {
             case 'NON_NULL':
@@ -79,7 +78,6 @@ export function getEnityInputType(
     return type;
 }
 
-//// PARSE para MAP que mapaeia os relacionanemtos entre os tipos INPUT para gerar formularios para cada INPUT sem perder a relação entre pai->sub_forms
 function getFieldsFromType(field: TypeElement) {
     if (field.kind === 'INPUT_OBJECT') return field.inputFields!;
     else if (field.kind === 'OBJECT') return field.fields!;
@@ -91,38 +89,34 @@ function parseScalar(type: OfTypeClass) {
     // se o `type` for um Scalar, retorna a scalar informando se é NON_NULL e se é LIST
     // sendo LIST, retorna também se cada elemente na list é ou não NON_NULL
     // caso `type` não seja Scalar, retorna false
-    let type_scalar: false | OfTypeClass = false;
+    let type_scalar: OfTypeClass | boolean = false
     let is_list = false;
-    let is_non_null = false; // cobre o caso field: Type! e list_field: [Type]!
-    let is_list_item_non_null = false; // cobre o caso field: [Type!]
-    const recursion = (_type: OfTypeClass) => {
+    let is_non_null = false; // cobre o caso `field: Type!` e `list_field: [Type]!`
+    let is_list_item_non_null = false; // cobre o caso `field: [Type!]`
+    const recursion = (_type: OfTypeClass): OfTypeClass | false => {
         switch (_type.kind) {
             case 'NON_NULL':
                 if (!is_list) is_non_null = true;
                 else is_list_item_non_null = true;
-                recursion(_type.ofType!);
-                break;
+                return recursion(_type.ofType!);
             case 'LIST':
                 is_list = true;
-                _type.ofType ? recursion(_type.ofType) : false;
-                break;
-            case 'INPUT_OBJECT':
-                break; return false;
+                if (_type.ofType) return recursion(_type.ofType)
+                return false;
             case 'SCALAR':
             case 'ENUM':
-                type_scalar = _type;
-                return true;
+                return _type;
+            case 'INPUT_OBJECT':
             default:
-                break; return false;
+                return false;
         }
     }
-    recursion(type)
-    return type_scalar ? { ...type_scalar as OfTypeClass, is_list, is_non_null, is_list_item_non_null } : false;
+    type_scalar = recursion(type)
+    return type_scalar ? { ...type_scalar, is_list, is_non_null, is_list_item_non_null } : false;
 }
 function addSubForms(
     input_fields: Arg[],
-    // introspect_caminho:string
-    ) {
+) {
     return input_fields
         .filter(iptf => !parseScalar(iptf.type))
         .map(
@@ -133,14 +127,12 @@ function addSubForms(
                     type: type.name!,
                     required: type.is_non_null,
                     multiple: type.is_list,
-                    // introspect_caminho:`${introspect_caminho}.${iptf.name}${type.is_list?'.0':''}`
                 }
             }
         )
 }
 function getFormElementFromScalar(
-    name: string, type: OfTypeClass, 
-    // introspect_caminho: string, 
+    name: string, type: OfTypeClass,
     multiple_field: boolean, disabled: boolean, required: boolean, list_item_required: boolean, schema: IntrospectionSchema
 ): InputComponent | SelectFieldComponent | ItemsComponent {
 
@@ -151,14 +143,12 @@ function getFormElementFromScalar(
 
     if (multiple_field) {
         const inner = getFormElementFromScalar(
-            name, type, 
-            // introspect_caminho,
-             false, disabled, list_item_required, false, schema
+            name, type,
+            false, disabled, list_item_required, false, schema
         );
         const _item = {
-            is: markRaw( Items),
+            is: markRaw(Items),
             props: {
-                // introspect_caminho,
                 nome: name,
                 label: name,
                 disabled,
@@ -175,9 +165,8 @@ function getFormElementFromScalar(
         // enums tem type próprio, precisam ser pegos no types[] no introspection
         const enumType = getEnityInputType(type.name!, schema as IntrospectionSchema);
         return {
-            is:markRaw( SelectField),
+            is: markRaw(SelectField),
             props: {
-                // introspect_caminho: introspect_caminho,
                 nome: name,
                 validacoes,
                 options: enumType.enumValues!.map(enumValue => { return { value: enumValue.name } }),
@@ -187,54 +176,41 @@ function getFormElementFromScalar(
     }
 
     switch (type.name) {
-
         case 'String':
             return {
-                is:markRaw( Input),
+                is: markRaw(Input),
                 props: {
                     nome: name,
-                    // label: field.label,
                     label: name,
                     type: 'text',
                     bootstrap_syncfusion: 'bs',
                     validacoes: validacoes,
-                    // modelValue: elementOptions.refs[explicitName],
-                    // theme:  theme ,
-                    // bs_class_wrap: field.kind === 'relationship' ? 'd-none' : undefined,
-                    // introspect_caminho: introspect_caminho,
                 },
             } satisfies InputComponent;
 
         case 'Int':
         case 'Float':
             return {
-                is:markRaw( Input),
+                is: markRaw(Input),
                 props: {
                     nome: name,
-                    // label: elementOptions.formSchema.label,
                     label: name,
                     type: 'number',
                     bootstrap_syncfusion: 'bs',
                     validacoes: validacoes,
-                    // modelValue: elementOptions.refs[explicitName],
-                    // introspect_caminho: introspect_caminho
-                    // theme:  theme ,
+                    step: type.name === 'Float' ? '0.1' : undefined
                 },
             } satisfies InputComponent;
 
         case 'Boolean':
             return {
-                is:markRaw( Input),
+                is: markRaw(Input),
                 props: {
                     nome: name,
-                    // label: elementOptions.formSchema.label,
                     label: name,
                     type: 'checkbox',
                     bootstrap_syncfusion: 'bs',
                     validacoes: validacoes,
-                    // modelValue: elementOptions.refs[explicitName],
-                    // introspect_caminho: introspect_caminho
-                    // theme:  theme ,
                 },
             } satisfies InputComponent;
 
@@ -242,18 +218,14 @@ function getFormElementFromScalar(
         default:
             if (type.name?.toLowerCase() === 'id' || name.toLowerCase() === 'id') {
                 return {
-                    is:markRaw( Input),
+                    is: markRaw(Input),
                     props: {
                         nome: name,
-                        // label: field.label,
                         label: name,
                         type: 'text',
                         bootstrap_syncfusion: 'bs',
                         validacoes: validacoes,
-                        // modelValue: elementOptions.refs[explicitName],
-                        // theme:  theme ,
                         bs_class_wrap: 'd-none',
-                        // introspect_caminho: introspect_caminho
                     },
                 } satisfies InputComponent;;
             } else {
@@ -304,31 +276,29 @@ function getFormElementFromScalar(
     }
 };
 
-export type FormSchemaValue = {
+export type FormSchema = {
     sub_forms: {
         name: string
         type: string
         required: boolean
         multiple: boolean,
-        // introspect_caminho:string
     }[],
     form_fields: {
         nome: string,
         kind: Kind,
         form_component_info: SelectFieldComponent | ItemsComponent | InputComponent,
-        // required:Boolean
     }[],
     nome_campo: string,
     multiple?: boolean
 }
-export type FormSchema = Map<
+export type FormSchemasMap = Map<
     string,
-    FormSchemaValue
+    FormSchema
 >;
 
 export default function (entity_name: string, introspectionSchema: IntrospectionSchema, form_state: FormStateHandler) {
 
-    const form_schema: FormSchema = new Map();
+    const forms_schemas_map: FormSchemasMap = new Map();
 
 
     const entityType = getEnityInputType(
@@ -336,21 +306,20 @@ export default function (entity_name: string, introspectionSchema: Introspection
         introspectionSchema
     );
 
-    form_schema.set(
+    forms_schemas_map.set(
         entityType.name,
         {
             sub_forms: addSubForms(
                 entityType.inputFields!,
                 // entityType.name
-                ),
+            ),
             form_fields: [],
-            nome_campo:'root'
+            nome_campo: 'root'
         });
-''
+    ''
     const mapeia = (typeElement: TypeElement,
-        // caminho_do_campo: string,
         is_multiple: boolean) => {
-        //typeElemente é o tipo da lista de types do schema
+        //typeElemente é o tipo na lista de types do schema
         // caminho_do_campo é o camoinho dentro do schema até o campo tipado com typeElement, exemplo:
         // modulo: Modulo -> "modulo" é o "campo folha" e "Modulo" é o nome do tipo e "CreateModuloInput" é typeElement pra criar um novo "Modulo"
 
@@ -362,11 +331,7 @@ export default function (entity_name: string, introspectionSchema: Introspection
 
                 debuggMode && console.table(f);
 
-                // o propblema de dizer se é multiple(list) e required tá aqui, isso porque is scalar ignora tudo isso
-                // uma forma de contornar é retonrar isso do is scalar e transformar ele num parseScalar
                 if (scalar_type) {
-                    // const _caminho_do_campo = `${caminho_do_campo}.${f.name}`// alterando Items, posso usar o modo debaixo
-                    // const _caminho_do_campo = `${caminho_do_campo}.${f.name}${scalar_type.is_list ? '.0' : ''}`
                     const form_component_info = getFormElementFromScalar(
                         f.name,
                         scalar_type,
@@ -376,20 +341,13 @@ export default function (entity_name: string, introspectionSchema: Introspection
                         scalar_type.is_list_item_non_null,
                         introspectionSchema
                     );
-                    form_schema.get(typeElement.name)!.form_fields.push(
+                    forms_schemas_map.get(typeElement.name)!.form_fields.push(
                         {
                             nome: f.name,
                             kind: f.type.kind,
                             form_component_info
                         }
                     );
-                    // add a ref to that value - bind variable for each field
-                        
-                    // newStoreForm(
-                    //     _caminho_do_campo,
-                    //     f,
-                    //     scalar_type.is_list
-                    // )
                 } else if (f.type.kind === 'INPUT_OBJECT') {// é subform
                     if (!f.type.name) debugger
                     const type = getEnityInputType(
@@ -400,7 +358,6 @@ export default function (entity_name: string, introspectionSchema: Introspection
                         f.type
                     )
 
-                    // const _caminho_do_campo = `${caminho_do_campo}.${f.name}${info_type.is_list ? '.0' : ''}`;
 
                     if (typeElement.name === info_type.name) {
                         debuggMode && console.log("Refencia circular identificada, break");
@@ -409,22 +366,19 @@ export default function (entity_name: string, introspectionSchema: Introspection
                         return;
                     }
                     // coloca cada INPUT_OBJECT (navbar and formLogin no form_schema)
-                    form_schema.set(
+                    forms_schemas_map.set(
                         type.name,
                         {
-                            // pai: typeElement.name,
                             sub_forms: addSubForms(
                                 type.inputFields!,
-                                // _caminho_do_campo
-                                ),
+                            ),
                             form_fields: [],
-                            nome_campo:f.type.name!
+                            nome_campo: f.type.name!
                         }
                     )
                     mapeia(
                         type,
-                        // _caminho_do_campo,
-                         info_type.is_list
+                        info_type.is_list
                     )
                 } else if (f.type.kind === 'NON_NULL') {
                     // NON null tem a seguinte caracteristica que pode combinar com LIST
@@ -436,7 +390,6 @@ export default function (entity_name: string, introspectionSchema: Introspection
                     const info_type = parseNonScalar(f.type);
                     if (!info_type) debugger;
 
-
                     const type = getEnityInputType(
                         info_type.name!,
                         introspectionSchema as IntrospectionSchema
@@ -445,36 +398,29 @@ export default function (entity_name: string, introspectionSchema: Introspection
                         // debug teste
                         debuggMode && console.log(type);
                         debuggMode && console.log(info_type);
-                        debugger
                     }
-
 
                     if (typeElement.name === info_type.name) {
                         debuggMode && console.log("Refencia circular identificada, break");
-                        console.log("Refencia circular identificada, break");
-                        console.log(typeElement.name)
+                        debuggMode && console.log(typeElement.name)
                         return;
                     }
-                    // const _caminho_do_campo = `${caminho_do_campo}.${f.name}${info_type.is_list ? '.0' : ''}`;
-                    form_schema.set(
+                    forms_schemas_map.set(
                         type.name,
                         {
-                            // pai: typeElement.name,
                             sub_forms: addSubForms(
                                 type.inputFields!,
-                                // _caminho_do_campo
-                                ),
+                            ),
                             form_fields: [],
-                            nome_campo:f.type.name!,
+                            nome_campo: f.type.name!,
                             multiple: info_type.is_list
                         }
                     )
                     if (f.type.ofType) {
 
                         mapeia(
-                            type, 
-                            // _caminho_do_campo,
-                             info_type.is_list
+                            type,
+                            info_type.is_list
                         )
 
                     } else {
@@ -501,24 +447,20 @@ export default function (entity_name: string, introspectionSchema: Introspection
                             console.log(typeElement.name)
                             return;
                         }
-                        // const _caminho_do_campo = `${caminho_do_campo}.${f.name}${info_type.is_list ? '.0' : ''}`;
-                        form_schema.set(
+                        forms_schemas_map.set(
                             type.name,
                             {
-                                // pai: typeElement.name,
                                 sub_forms: addSubForms(
                                     type.inputFields!,
-                                    // _caminho_do_campo
-                                    ),
+                                ),
                                 form_fields: [],
-                                nome_campo:f.type.name!,
+                                nome_campo: f.type.name!,
                                 multiple: info_type.is_list
                             }
                         )
                         mapeia(
                             type,
-                            //  _caminho_do_campo,
-                              info_type.is_list
+                            info_type.is_list
                         )
                     } else if (f.type.ofType?.kind === 'NON_NULL') {
                         const info_type = parseNonScalar(
@@ -535,16 +477,13 @@ export default function (entity_name: string, introspectionSchema: Introspection
                             console.log(typeElement.name)
                             return;
                         }
-                        // const _caminho_do_campo = `${caminho_do_campo}.${f.name}${info_type.is_list ? '.0' : ''}`;
-                        form_schema.set(
+                        forms_schemas_map.set(
                             type.name,
                             {
-                                // pai: typeElement.name,
                                 sub_forms: addSubForms(
                                     type.inputFields!,
-                                    // _caminho_do_campo
-                                    ),
-                                nome_campo:f.type.name!,
+                                ),
+                                nome_campo: f.type.name!,
                                 form_fields: [],
                                 multiple: info_type.is_list,
                             }
@@ -552,8 +491,7 @@ export default function (entity_name: string, introspectionSchema: Introspection
 
                         mapeia(
                             type,
-                            //  _caminho_do_campo,
-                              info_type.is_list
+                            info_type.is_list
                         )
                     } else {
                         console.log("ofType de LIST não resolvido"); debugger
@@ -565,5 +503,5 @@ export default function (entity_name: string, introspectionSchema: Introspection
         )
     }
     mapeia(entityType, false);
-    return form_schema;
+    return forms_schemas_map;
 }

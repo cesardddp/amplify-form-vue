@@ -2,7 +2,7 @@
 import SelectField from "./SelectField.vue";
 import Items from "./Items.vue";
 import Input from "./Input.vue";
-import { Unset_from_global_state } from "../types";
+import { Unset_from_global_state } from "../formTypes";
 
 export type OpcoesValidacoes = '' | 'required' | `minLength:${number}` | `maxLength:${number}`;
 

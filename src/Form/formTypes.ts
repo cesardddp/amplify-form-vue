@@ -1,4 +1,4 @@
-import { FormSchemaValue } from "./parse-introspection";
+import { FormSchema } from "./parse-introspection";
 
 export type Unset_from_global_state = (Function|Unset_from_global_state)[]
 // {
@@ -8,7 +8,7 @@ export type Unset_from_global_state = (Function|Unset_from_global_state)[]
 
 
 export interface FormProps {
-    form_type: FormSchemaValue
+    form_type: FormSchema
     introspection_caminho: string
     form_name: string
     is_multipleform_item: boolean
