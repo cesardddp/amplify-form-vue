@@ -1,6 +1,4 @@
 <script setup lang="ts" >
-import TextField from "./TextField.vue";
-import TextAreaField, { TextAreaFieldProps } from "./TextAreaField.vue";
 import SubmitButton, { SubmitButtonProps } from "./SubmitButton.vue";
 import SelectField from "./SelectField.vue";
 import Items from "./Items.vue";
@@ -192,8 +190,6 @@ const componentes = ref<{
     { nome: "NumberField", cpnt: markRaw(Input), test: 0, props: reactive(numberFieldProps), comentarios: '', createdAt: '' },
     { nome: "NumberFieldSF", cpnt: markRaw(Input), test: 0, props: reactive(numberFieldSFProps), comentarios: '', createdAt: '' },
     { nome: "TextField", cpnt: markRaw(Input), test: ref(""), props: reactive(textFieldProps), comentarios: '', createdAt: '' },
-    { nome: "TextFieldSyncFusion", cpnt: markRaw(TextField), test: "", props: reactive(textFieldSyncFusionProps), comentarios: '', createdAt: '' },
-    { nome: "TextAreaField", cpnt: markRaw(TextField), test: '', props: reactive(textAreaFieldProps), comentarios: '', createdAt: '' },
     { nome: "TextAreaFieldSyncFusion", cpnt: markRaw(Input), test: '', props: reactive(textAreaFieldSFProps), comentarios: '', createdAt: '' },
     { nome: "SubmitButton", cpnt: markRaw(SubmitButton), test: () => alert('fui clicado'), props: reactive(submitButtonProps), comentarios: '', createdAt: '' },
     { nome: "SubmitButtonFS", cpnt: markRaw(SubmitButton), test: '', props: reactive(submitButtonFSProps), comentarios: '', createdAt: '' },
