@@ -49,7 +49,7 @@ const set_opacity = ref(false)
 
     </div>
     <!-- CURRENT SUBFORM SELECTED -->
-    <section v-if="sub_forms.filho" class="col border border-top-0 p-1" :class="set_opacity ? 'opacity-100' : 'opacity-50'">
+    <section @click="set_opacity = true" v-if="sub_forms.filho" class="col border border-top-0 p-1" :class="set_opacity ? 'opacity-100' : 'opacity-50'">
         <div class="tab-pane active" :id="sub_forms.filho.name" role="tabpanel"
             :aria-labelledby="sub_forms.filho.name + '-tab'">
             <FormHandler :introspection_caminho="`${introspection_caminho}.${sub_forms.filho.name}`"
