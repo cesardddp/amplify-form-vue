@@ -169,7 +169,10 @@ const safeFieldSize = ref('md');//fieldSizeMap.get(fieldSize) ? fieldSize : 'md'
 
 const this_input = ref();
 onMounted(() => {
-    new Tooltip(this_input.value!,{container:'body'});
+    new Tooltip(this_input.value!, { container: 'body' });
+    if (props.input_html_element) {
+        props.input_html_element.value = this_input.value
+    }
 });
 
 </script>
@@ -181,10 +184,8 @@ onMounted(() => {
             <input :class="bs_class_input" v-model="value" :type='type' :id="introspect_caminho" :name="introspect_caminho"
                 :placeholder="placeholder ?? 'Insira ' + nome" :step="step" :disabled="disabled"
                 :required="validacao.validacoes.required" :minlength="validacao.validacoes.minlength"
-                :maxlength="validacao.validacoes.maxlength"
-                 data-bs-toggle="tooltip" data-bs-placement="top"
-                :title="description" ref="this_input"
-                >
+                :maxlength="validacao.validacoes.maxlength" data-bs-toggle="tooltip" data-bs-placement="top"
+                :title="description" ref="this_input">
 
             <label data-bs-toggle="popover" data-bs-trigger="hover" :class="bs_class_label" :for="introspect_caminho">{{
                 label }}</label>

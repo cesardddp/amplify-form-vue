@@ -1,14 +1,13 @@
 <script setup lang="ts" >
-import { computed, ComputedRef, inject, markRaw, PropType, reactive, Ref, ref, shallowRef, toRef, watch } from "vue";
+import { computed, inject, reactive, Ref, ref, shallowRef, toRef, watch, watchEffect } from "vue";
 import Form from "./Form.vue";
 import { FormSchemasMap, FormSchema } from "./parse-introspection";
 import { FormStateHandler as GlobalFormStateHandler } from "./formStorage";
-import { cloneDeep } from "lodash";
 import { FormHandlerProps, FormProps } from "./formTypes";
 
 
 const props = defineProps<FormHandlerProps>()
-
+const emits = defineEmits(['qtos_forms'])
 const global_form_state_handler = (inject('form_state_handler') as GlobalFormStateHandler)
 
 const input = inject<FormSchemasMap>("form_types")!.get(props.form_name);
@@ -106,10 +105,18 @@ class Inner_forms_handler {
 
 }
 let inner_forms_handler: Inner_forms_handler
-let formulario_em_visualizacao: ComputedRef<FormProps>
 
 if (input.multiple) {
     inner_forms_handler = new Inner_forms_handler()
+    watchEffect(() => {
+        emits(
+            'qtos_forms',
+            {
+                quem: props.field_name,
+                qtos: inner_forms_handler.inner_form_list.value.length
+            }
+        )
+    })
 }
 
 function get_form_field_content(introspect_caminho: string) {
@@ -133,6 +140,7 @@ function get_form_field_content(introspect_caminho: string) {
         form_fields_gbl_state_unseters
     }" />
     <article v-else>
+
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li v-for="[key, form], index in inner_forms_handler.inner_form_list.value" class="nav-item position-relative"
@@ -149,9 +157,8 @@ function get_form_field_content(introspect_caminho: string) {
 
             </li>
             <li class="nav-item " role="presentation" aria-selected="false">
-                <button class="nav-link">
-                    <i @click="() => inner_forms_handler.novo_item_form()" type="button" class="bi bi-plus">
-                    </i>
+                <button @click="() => inner_forms_handler.novo_item_form()" class="nav-link">
+                    <i type="button" class="bi bi-plus"></i>
                 </button>
             </li>
         </ul>

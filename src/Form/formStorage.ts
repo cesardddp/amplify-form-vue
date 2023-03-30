@@ -35,14 +35,8 @@ export class FormStateHandler {
 
     }
     get_final_json() {
-        console.log('real update sta');
         const json = {};
         for (let k of this.state_as_Map.keys()) {
-            if (k.endsWith('item')) {
-                // a lista de items, tirando o "item.`number`" do começo
-                continue
-            }
-            k = k.replace('items.', '')
             objPath.set(
                 json,
                 k,

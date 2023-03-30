@@ -3,6 +3,7 @@ import SelectField from "./SelectField.vue";
 import Items from "./Items.vue";
 import Input from "./Input.vue";
 import { Unset_from_global_state } from "../formTypes";
+import { ShallowRef } from "vue";
 
 export type OpcoesValidacoes = '' | 'required' | `minLength:${number}` | `maxLength:${number}`;
 
@@ -16,7 +17,7 @@ type BaseComponent = {
     bs_class_wrap?: string;
     bs_class_input?: string;
     bs_class_label?: string;
-    introspect_caminho?: string;
+    introspect_caminho: string;
     validacoes?: OpcoesValidacoes[];
     form_fields_gbl_state_unseters?: Unset_from_global_state
 }
@@ -55,6 +56,7 @@ export interface InputProps extends BaseComponent {
     floatLabelType?: "Auto" | "Always" | "Never";
     // default: string | number | boolean;
     // modelValue: any// string //| number | boolean
+    input_html_element?:ShallowRef<HTMLInputElement|undefined>
 }
 
 export interface SelectProps extends BaseComponent {
