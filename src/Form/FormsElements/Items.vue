@@ -51,7 +51,7 @@ function add_item(key_valor_existente?: string) {
     )
 }
 for (let k of global_form_state_handler.state_as_Map.keys()) {
-    if (k.startsWith(props.introspect_caminho)) {
+    if (k.startsWith(props.introspect_caminho!)) {
         add_item(
             k
         )

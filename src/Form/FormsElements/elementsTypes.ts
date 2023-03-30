@@ -17,7 +17,7 @@ type BaseComponent = {
     bs_class_wrap?: string;
     bs_class_input?: string;
     bs_class_label?: string;
-    introspect_caminho: string;
+    introspect_caminho?: string;
     validacoes?: OpcoesValidacoes[];
     form_fields_gbl_state_unseters?: Unset_from_global_state
 }
