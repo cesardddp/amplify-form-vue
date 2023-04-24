@@ -1,29 +1,10 @@
 <script setup lang="ts">
 import { Input } from "@syncfusion/ej2-inputs";
-import { onMounted, ref, computed, inject } from "vue";
+import { onMounted, ref, computed, inject, onUnmounted } from "vue";
 import { FormStateHandler } from "../formStorage";
 import type { InputProps, Validacoes } from "./elementsTypes";
 import { Tooltip } from "bootstrap";
 
-// export default defineComponent({
-// props: {
-//     cpn_props: {
-//         type: Object as PropType<InputProps>,
-//         default: {
-//             bootstrap_syncfusion: 'bs',
-//             type: 'text',
-//             bs_class_wrap: '',
-//             bs_class_input: '',
-//             bs_class_label: '',
-//         }
-//     },
-//     introspect_caminho:{
-//         type:String,
-//         required:true
-//     }
-// },
-// emits: ['update:modelValue'],
-// setup() {
 const props = withDefaults(defineProps<InputProps>(), {
     bootstrap_syncfusion: 'bs',
     type: 'text',
@@ -34,22 +15,13 @@ const props = withDefaults(defineProps<InputProps>(), {
 })
 
 console.log('injecting: ' + props.introspect_caminho);
-
 if (!props.introspect_caminho)
-    throw new Error(`introspect_caminho em ${props.nome} invalido: ${props.introspect_caminho} `);
-
+    throw new Error(`Não foi passado introspect_caminho em ${props.nome}: ${props.introspect_caminho} `);
 
 const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
 const _ref = global_form_state_handler.state_as_Map.get(props.introspect_caminho) ??
     global_form_state_handler.addRef(props.introspect_caminho, false)
 
-if (props.form_fields_gbl_state_unseters)
-    // props.unset_from_global_state.list_unset.push(
-    props.form_fields_gbl_state_unseters.push(
-        () => {
-            global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}`)
-        }
-    )
 const value = computed({
     get() {
         return _ref.value
@@ -169,11 +141,20 @@ const safeFieldSize = ref('md');//fieldSizeMap.get(fieldSize) ? fieldSize : 'md'
 
 const this_input = ref();
 onMounted(() => {
-    new Tooltip(this_input.value!, { container: 'body' });
+    new Tooltip(this_input.value!, {
+        container: 'body',
+        trigger: 'hover',
+        placement: 'left'
+    });
     if (props.input_html_element) {
         props.input_html_element.value = this_input.value
     }
 });
+onUnmounted(()=>{
+    if (props.unset_form_field_from_state_when_component_unmount){
+        global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}`)
+    }
+})
 
 </script>
 <template>
@@ -184,8 +165,7 @@ onMounted(() => {
             <input :class="bs_class_input" v-model="value" :type='type' :id="introspect_caminho" :name="introspect_caminho"
                 :placeholder="placeholder ?? 'Insira ' + nome" :step="step" :disabled="disabled"
                 :required="validacao.validacoes.required" :minlength="validacao.validacoes.minlength"
-                :maxlength="validacao.validacoes.maxlength" data-bs-toggle="tooltip" data-bs-placement="top"
-                :title="description" ref="this_input">
+                :maxlength="validacao.validacoes.maxlength" data-bs-toggle="tooltip" :title="description" ref="this_input">
 
             <label data-bs-toggle="popover" data-bs-trigger="hover" :class="bs_class_label" :for="introspect_caminho">{{
                 label }}</label>

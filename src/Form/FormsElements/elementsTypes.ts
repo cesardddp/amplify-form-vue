@@ -1,4 +1,3 @@
-// import { OpcoesValidacoes } from "../../../merm-schema/custom-types";
 import SelectField from "./SelectField.vue";
 import Items from "./Items.vue";
 import Input from "./Input.vue";
@@ -6,7 +5,6 @@ import { Unset_from_global_state } from "../formTypes";
 import { ShallowRef } from "vue";
 
 export type OpcoesValidacoes = '' | 'required' | `minLength:${number}` | `maxLength:${number}`;
-
 
 type BaseComponent = {
     nome: string;
@@ -19,7 +17,8 @@ type BaseComponent = {
     bs_class_label?: string;
     introspect_caminho?: string;
     validacoes?: OpcoesValidacoes[];
-    form_fields_gbl_state_unseters?: Unset_from_global_state
+    unset_form_field_from_state_when_component_unmount?: boolean //Unset_from_global_state;
+    input_html_element?:ShallowRef<HTMLInputElement|undefined>;
 }
 
 type InnerComponent = {
@@ -56,7 +55,6 @@ export interface InputProps extends BaseComponent {
     floatLabelType?: "Auto" | "Always" | "Never";
     // default: string | number | boolean;
     // modelValue: any// string //| number | boolean
-    input_html_element?:ShallowRef<HTMLInputElement|undefined>
 }
 
 export interface SelectProps extends BaseComponent {

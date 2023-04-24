@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Popover, Tooltip } from "bootstrap";
-import { computed, inject, onMounted, ref, toRef, watch } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref, toRef, watch } from "vue";
 import { FormStateHandler } from "../formStorage";
 import type { SelectProps } from "./elementsTypes";
 
@@ -18,12 +18,12 @@ const global_form_state_handler = (inject('form_state_handler') as FormStateHand
 const _ref = global_form_state_handler.state_as_Map.get(props.introspect_caminho) ??
     global_form_state_handler.addRef(props.introspect_caminho, false)
 
-if (props.form_fields_gbl_state_unseters)
-    props.form_fields_gbl_state_unseters.push(
-        () => {
-            global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}`)
-        }
-    )
+// if (props.form_fields_gbl_state_unseters)
+//     props.form_fields_gbl_state_unseters.push(
+//         () => {
+//             global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}`)
+//         }
+//     )
 
 const value = computed({
     get() {
@@ -149,36 +149,48 @@ const validacao = computed(() => {
 
 const this_select = ref();
 onMounted(() => {
-    new Tooltip(this_select.value!, { container: 'body' });
+    new Tooltip(this_select.value!, {
+        container: 'body',
+        trigger: 'hover',
+        placement: 'left'
+    });
+    if (props.input_html_element) {
+        props.input_html_element.value = this_select.value
+    }
 });
+onUnmounted(() => {
+    if (props.unset_form_field_from_state_when_component_unmount) {
+        global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}`)
+    }
+})
 </script>
 <template>
     <!-- <FieldWithError props.fieldSize={adaptiveFieldSize} theme={theme} {...rest}> -->
     <!-- <div
-                                                    data-testid={`${fieldname}-sizing-div`}
-                                                    className={`${selectStyle} ${fieldSizeMap.get(adaptiveFieldSize)}`}>
-                                                    <ReactSelect
-                                                        className='peer'
-                                                        styles={customStyles}
-                                                        options={options}
-                                                        isMulti={multiple || undefined}
-                                                        isSearchable={false}
-                                                        placeholder={selectLabel}
-                                                        onChange={values => setValue(values)}
-                                                        {...otherFieldProps}
-                                                    /> 
-                                                </div>
-                                            -->
+data-testid={`${fieldname}-sizing-div`}
+className={`${selectStyle} ${fieldSizeMap.get(adaptiveFieldSize)}`}>
+<ReactSelect
+    className='peer'
+    styles={customStyles}
+    options={options}
+    isMulti={multiple || undefined}
+    isSearchable={false}
+    placeholder={selectLabel}
+    onChange={values => setValue(values)}
+    {...otherFieldProps}
+/> 
+</div>
+-->
 
     <!-- :styles="{{ customStyles }}" -->
     <!-- </FieldWithError> -->
 
 
-    <div class="form-floating" data-bs-toggle="tooltip" data-bs-placement="top" :title="description" ref="this_select">
+    <div class="form-floating" data-bs-toggle="tooltip" :title="description" ref="this_select">
         <select class="form-select" :name="nome" :id="introspect_caminho" v-model="value" aria-label="Floating label select"
             :required="validacao.validacoes.required">
             <option selected value="">Selecione uma opção...</option>
-            <option v-for="op in options" :value="op.value">{{ op.label ?? op.value }}</option>
+            <option v-for="op,index in options" :value="op.value" :key="index">{{ op.label ?? op.value }}</option>
         </select>
         <label :for="introspect_caminho" class="form-label">{{ label ?? nome }}</label>
     </div>

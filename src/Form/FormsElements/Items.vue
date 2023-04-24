@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<ItemsProps>(), {
 
 const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
 
-const [items, updateItem] = function <T>(v: T) {
+const [items, updateItems] = function <T>(v: T) {
     const r = shallowRef(v);
     const get = () => r.value
     const set = (v: (i: T) => T | T) => {
@@ -33,20 +33,20 @@ const invalid = reactive({
 })
 
 function add_item(key_valor_existente?: string) {
-    updateItem(
-        i => {
-            const index = i.length;
+    updateItems(
+        items => {
+            const index = items.length;
             const key = `${props.introspect_caminho}.${index}`
             const value = global_form_state_handler.state_as_Map.get(key_valor_existente ?? key)!
             // debugger
-            if (!value.value || i.find(rfv => rfv.value === value.value)) {
+            if (!value.value || items.find(rfv => rfv.value === value.value)) {
                 invalid.msg = !value.value ? 'Item não pode ser vazio!' : 'Item já existe!'
                 invalid.show = true, setTimeout(() => {
                     invalid.show = false
                 }, 2000);
             }
-            else i.push(value)
-            return i
+            else items.push(value)
+            return items
         }
     )
 }
@@ -58,14 +58,14 @@ for (let k of global_form_state_handler.state_as_Map.keys()) {
     }
 }
 function del_item(global_key?: number) {
-    updateItem(
+    updateItems(
         i => {
             const n_items = i.length;
+            i.map
             i.splice(global_key ?? i.length - 1, 1)
             i.forEach((v, indice) => {
-                const state = global_form_state_handler.state_as_Map
-                    .get(`${props.introspect_caminho}.${indice}`)
-                state != v
+                global_form_state_handler.state_as_Map
+                    .set(`${props.introspect_caminho}.${indice}`,v)
             })
             global_form_state_handler.state_as_Map.delete(
                 `${props.introspect_caminho}.${n_items - 1}`
@@ -77,8 +77,8 @@ function del_item(global_key?: number) {
 }
 
 const inner_props = computed(() => {
-    console.clear()
     console.log('update cmp', items().length);
+    // debugger
     const _props = { //define diferenças de cada props de cada elemento interno
         is: markRaw(props.inner_component.is),
 
@@ -86,32 +86,34 @@ const inner_props = computed(() => {
             ...props.inner_component.props,
             // nome: props.inner_component.props.nome + '-' + ,
             label: '',
-            description: 'enter para add e shift+del para apagar',
+            // description: 'enter para add e shift+del para apagar',
+            description: '',
             introspect_caminho: `${props.introspect_caminho}.${items().length}`,
-            input_html_element: shallowRef()
-            // reactive({
-            //     ir: shallowRef(),
-            //     update: function (v) {
-            //         this.ir.value = v
-            //         console.log(this.ir);
-            //         debugger
-
-            //     }
-            // })
+            input_html_element: shallowRef(),
+            unset_form_field_from_state_when_component_unmount: false//props.form_fields_gbl_state_unseters
         }
     } satisfies ItemsProps['inner_component'];
     return _props
 })
+let alredy_first_focus = false;
 onMounted(() => {
     watchEffect(() => {
-        inner_props.value.props.input_html_element.value?.focus()
+        if (
+            inner_props.value.props.input_html_element.value
+            && alredy_first_focus
+        )
+            inner_props.value.props.input_html_element.value.focus()
+
+        else alredy_first_focus = true
     })
 })
+
+
 
 </script>
 <template>
     <section class="border rounded p-1 container">
-        Items: <span v-for="item, index in items()" class="badge rounded-pill px-3 bg-primary me-1 position-relative">
+        {{nome}}: <span v-for="item, index in items()" class="badge rounded-pill px-3 bg-primary me-1 position-relative" :key="index">
             {{ item.value }}
             <span @click="() => del_item(index)"
                 class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger z-1">
@@ -126,6 +128,10 @@ onMounted(() => {
                     @keyup.enter="() => add_item()" @keyup.shift.delete="del_item()"
                     :key="inner_props.props.introspect_caminho">
                 </component>
+                <!-- <component :ref="inner_props.props.introspect_caminho" :is="inner_props.is" v-bind="inner_props.props"
+                    @keyup.enter="() => add_item()" @keyup.shift.delete="del_item()"
+                    :key="inner_props.props.introspect_caminho">
+                </component> -->
                 <div class="text-danger" :class="invalid.show ? '' : 'd-none'">
                     {{ invalid.msg }}
                 </div>
