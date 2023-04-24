@@ -91,13 +91,13 @@ class Inner_forms_handler {
         this.change_tracker_form_components_props += 1
     }
     remove_item(index_key: number) {
-        this.form_components_props.get(index_key)!
-            .form_fields_gbl_state_unseters!
-            .flat()
-            .map(i => {
-                if (Array.isArray(i)) throw new Error("flat não funcionou");
-                i()
-            })
+        // this.form_components_props.get(index_key)!
+        //     .form_fields_gbl_state_unseters!
+        //     .flat()
+        //     .map(i => {
+        //         if (Array.isArray(i)) throw new Error("flat não funcionou");
+        //         i()
+        //     })
         this.form_components_props.set(index_key, null)
         this.change_tracker_form_components_props += 1
         // this.form_components_props.delete(index_key); //tiro do map de items
@@ -144,15 +144,16 @@ function get_form_field_content(introspect_caminho: string) {
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li v-for="[key, form], index in inner_forms_handler.inner_form_list.value" class="nav-item position-relative"
-                role="presentation">
+                role="presentation" :key="form.introspection_caminho">
                 <button @click="() => inner_forms_handler.remove_item(key)" type="button" role="button"
                     class="z-3 position-absolute top-0 start-0 translate-middle badge border border-light rounded-circle bg-danger ">
-                    x
+                    x{{key}}
                 </button>
-                <button class="nav-link" :id="`${form?.introspection_caminho}-tab`" data-bs-toggle="tab"
+                <button class="nav-link" :id="`${form.introspection_caminho}-tab`" data-bs-toggle="tab"
                     :data-bs-target="`#${form?.introspection_caminho}`" type="button" role="tab"
-                    :aria-controls="`${form?.introspection_caminho}`" aria-selected="false">
-                    {{ index + 1 }}: {{ get_form_field_content(form?.introspection_caminho!) ?? '(editando)' }}
+                    :aria-controls="`${form?.introspection_caminho}`" aria-selected="false"
+                    :class="index === 0 ? 'active' : ''">
+                    {{ key + 1 }}: {{ get_form_field_content(form.introspection_caminho) ?? '(editando)' }}
                 </button>
 
             </li>
@@ -166,10 +167,12 @@ function get_form_field_content(introspect_caminho: string) {
         <!-- Tab panes -->
         <div class="tab-content">
             <div v-for="[key, form], index in inner_forms_handler.inner_form_list.value" class="tab-pane"
-                :id="`${form?.introspection_caminho}`" role="tabpanel"
-                :aria-labelledby="`${form?.introspection_caminho}-tab`">
+                :id="`${form.introspection_caminho}`" role="tabpanel"
+                :aria-labelledby="`${form?.introspection_caminho}-tab`"
+                :class="index === 0 ? 'active' : ''"
+                :key="form.introspection_caminho">
                 <!-- {{ `${form?.introspection_caminho}` }}  -->
-                <Form v-bind="form!" :key="form!.introspection_caminho" />
+                <Form v-bind="form"  />
             </div>
         </div>
     </article>
