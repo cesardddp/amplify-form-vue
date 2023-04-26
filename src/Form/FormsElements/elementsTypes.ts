@@ -14,7 +14,7 @@ type BaseComponent = {
     bs_class_wrap?: string;
     bs_class_input?: string;
     bs_class_label?: string;
-    introspect_caminho: string;
+    introspect_caminho?: string;
     validacoes?: OpcoesValidacoes[];
     input_html_element?:ShallowRef<HTMLInputElement|undefined>;
 }

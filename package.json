@@ -3,6 +3,19 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/amplify-form-vue.umd.cjs",
+  "module": "./dist/amplify-form-vue.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/amplify-form-vue.es.js",
+      "require": "./dist/amplify-form-vue.umd.ts"
+    },
+    "./dist/style.scss": "./dist/style.scss"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
