@@ -10,170 +10,156 @@ const props = defineProps<FormHandlerProps>()
 const emits = defineEmits(['qtos_forms'])
 const global_form_state_handler = (inject('form_state_handler') as GlobalFormStateHandler)
 
-const input = inject<FormSchemasMap>("form_types")!.get(props.form_name);
-if (!input) throw new Error("Input Form não encontrado! Form.vue error");
-
+const input = (inject("form_types") as FormSchemasMap).get(props.form_name)!;
 
 // multiple logic:
 class Inner_forms_handler {
-    form_components_props = reactive(
-        new Map<number, FormProps | null>()
-    )
-    change_tracker_form_components_props = 1
+  buttons_refs: { [key: string]: Ref } = {}
+  private add_um = ref(false)
 
-    inner_form_list = computed(() => {
-        this.change_tracker_form_components_props = 1;
-        const k = [
-            ...this.form_components_props.entries()
-        ].filter(
-            ([key, form]) => form != null
-        )
-        return k
-    })
+  form_components_props = computed(() => {
+    const _keys = []
+    let index_encontrados: string[] = [];
+    for (let key of global_form_state_handler.state_as_Map.keys()) {
+      if (key.startsWith(props.introspection_caminho)) {
 
+        const field = key.replace(props.introspection_caminho + ".", "");
 
-    constructor() {
-        let index_encontrados: string[] = []
-        for (let key of global_form_state_handler.state_as_Map.keys()) {
-            if (key.startsWith(props.introspection_caminho)) {
-
-                const field = key.replace(props.introspection_caminho + '.', '')
-                // debugger
-                const index = field.split('.').shift()!
-                // só pega o primeiro campo do subfor e ignora o subseuqantes
-                // uma vez que `novo_item_form` já trata cada campo
-                if (index_encontrados.includes(index)) continue
-                index_encontrados.push(index)
-                // subform ta com index errado do pai
-                this.novo_item_form()
-                //     // this.novo_item_form()
-            }
-        }
-        this.form_components_props.size || this.set_form_item()
+        const index = field.split(".").shift()!;
+        if (index_encontrados.includes(index)) continue;
+        index_encontrados.push(index);
+        _keys.push(`${props.introspection_caminho}.${index}`)
+      }
     }
 
-    index_disponivel() {
-        let [key, value] = [-1, undefined as unknown]
-        for ([key, value] of this.form_components_props.entries()) {
-            if (value === null) return key
-        }
-        return key + 1
-    }
-    set_form_item() {
-        const index_key = this.index_disponivel();
-        const _introspection_caminho = `${props.introspection_caminho}.${index_key}`
-        const form_prop: FormProps = {
-            form_type: input!,
-            is_multipleform_item: true,
-            introspection_caminho: _introspection_caminho,
-            form_name: props.form_name,
-            form_fields_gbl_state_unseters: []
-        }
-        props.form_fields_gbl_state_unseters?.push(form_prop.form_fields_gbl_state_unseters!)
+    
+    // para novo form item, altera add_um pra true, isso força o recalculo do computed, computando com mais um item após o ultimo indexado no geranciador global
+    if (this.add_um.value) {
+      const last_indice = Number(index_encontrados.pop() ?? -1)
+      const key = `${props.introspection_caminho}.${last_indice + 1}`
+      _keys.push(key)
+      this.buttons_refs[key] = ref()
 
-        form_prop.form_type.form_fields = form_prop.form_type.form_fields.map(ff => {
-            const form_component_info = { ...ff.form_component_info };
-            form_component_info.props.introspect_caminho = `${_introspection_caminho}.${form_component_info.props.nome}`;
+      // retorna add_um pra false pra não adicionar novamente no proximo computed
+      this.add_um.value = false
+      
 
-            return {
-                nome: ff.nome,
-                kind: ff.kind,
-                form_component_info
-            }
-        })
-
-
-        this.form_components_props.set(index_key, form_prop);
+      setTimeout(() => {
+        
+        this.buttons_refs[key].value[0].click()
+      }, 100)
     }
 
-    novo_item_form() {
-        this.set_form_item()
-        this.change_tracker_form_components_props += 1
-    }
-    remove_item(index_key: number) {
-        // this.form_components_props.get(index_key)!
-        //     .form_fields_gbl_state_unseters!
-        //     .flat()
-        //     .map(i => {
-        //         if (Array.isArray(i)) throw new Error("flat não funcionou");
-        //         i()
-        //     })
-        this.form_components_props.set(index_key, null)
-        this.change_tracker_form_components_props += 1
-        // this.form_components_props.delete(index_key); //tiro do map de items
-    }
+    return _keys
+      .map((introspect_caminho) => this.copia_e_preenche_form_props_com_introspec_caminho(introspect_caminho))
+  })
+  novo_item_form() {
+    this.add_um.value = true
+  }
 
+  copia_e_preenche_form_props_com_introspec_caminho(introspect_caminho: string) {
+    // pega um copia das props do componente do form, e preenche com o introspect_caminho deste item
+    const form_prop: FormProps = {
+      form_type: input,
+      is_multipleform_item: true,
+      introspection_caminho: introspect_caminho,
+      form_name: props.form_name,
+    };
+
+    form_prop.form_type.form_fields = form_prop.form_type.form_fields.map(
+      (ff) => {
+        const form_component_info = { ...ff.form_component_info };
+        form_component_info.props.introspect_caminho = `${introspect_caminho}.${form_component_info.props.nome}`;
+        return {
+          nome: ff.nome,
+          kind: ff.kind,
+          form_component_info,
+        };
+      }
+    );
+    return form_prop;
+  }
+
+  remove_item(introspect_caminho: string) {
+    [...global_form_state_handler.state_as_Map.keys()]
+      .filter(key => key.startsWith(introspect_caminho))
+      .map(key => global_form_state_handler.state_as_Map.delete(key))
+
+    delete this.buttons_refs[introspect_caminho];
+  }
 }
+
 let inner_forms_handler: Inner_forms_handler
 
 if (input.multiple) {
-    inner_forms_handler = new Inner_forms_handler()
-    watchEffect(() => {
-        emits(
-            'qtos_forms',
-            {
-                quem: props.field_name,
-                qtos: inner_forms_handler.inner_form_list.value.length
-            }
-        )
-    })
+  inner_forms_handler = new Inner_forms_handler();
+  if (!inner_forms_handler.form_components_props.value.length)
+    inner_forms_handler.novo_item_form();
+
+  watchEffect(() => {
+    emits(
+      'qtos_forms',
+      {
+        quem: props.field_name,
+        qtos: inner_forms_handler.form_components_props.value.length
+      }
+    )
+  })
 }
 
 function get_form_field_content(introspect_caminho: string) {
-    const ppp = [
-        ...global_form_state_handler.state_as_Map.keys()
-    ].filter(i => i.startsWith(introspect_caminho)).slice(0, 5)
-        .map(k => [k.split('.').pop(), global_form_state_handler.state_as_Map.get(k)?.value])
-    // debugger
-    if (!ppp || ppp.length <= 0) return
+  const ppp = [
+    ...global_form_state_handler.state_as_Map.keys()
+  ].filter(i => i.startsWith(introspect_caminho)).slice(0, 5)
+    .map(k => [k.split('.').pop(), global_form_state_handler.state_as_Map.get(k)?.value])
 
-    const first = ppp[0]
-    return first[1] ? first[1] : '(editando)'
+  if (!ppp || ppp.length <= 0) return
+
+  const first = ppp[0]
+  return first[1] ? first[1] : '(editando)'
 }
 </script>
 <template>
-    <Form v-if="!input.multiple" v-bind="{
-        form_name,
-        form_type: input,
-        introspection_caminho,
-        is_multipleform_item,
-        form_fields_gbl_state_unseters
+  <Form v-if="!input.multiple" v-bind="{
+      form_name,
+      form_type: input,
+      introspection_caminho,
+      is_multipleform_item,
     }" />
-    <article v-else>
+  <article v-else>
 
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li v-for="[key, form], index in inner_forms_handler.inner_form_list.value" class="nav-item position-relative"
-                role="presentation" :key="form.introspection_caminho">
-                <button @click="() => inner_forms_handler.remove_item(key)" type="button" role="button"
-                    class="z-3 position-absolute top-0 start-0 translate-middle badge border border-light rounded-circle bg-danger ">
-                    x{{key}}
-                </button>
-                <button class="nav-link" :id="`${form.introspection_caminho}-tab`" data-bs-toggle="tab"
-                    :data-bs-target="`#${form?.introspection_caminho}`" type="button" role="tab"
-                    :aria-controls="`${form?.introspection_caminho}`" aria-selected="false"
-                    :class="index === 0 ? 'active' : ''">
-                    {{ key + 1 }}: {{ get_form_field_content(form.introspection_caminho) ?? '(editando)' }}
-                </button>
 
-            </li>
-            <li class="nav-item " role="presentation" aria-selected="false">
-                <button @click="() => inner_forms_handler.novo_item_form()" class="nav-link">
-                    <i type="button" class="bi bi-plus"></i>
-                </button>
-            </li>
-        </ul>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li v-for="form, index in inner_forms_handler.form_components_props.value" class="nav-item position-relative"
+        role="presentation" :key="form.introspection_caminho">
+        <button @click="() => inner_forms_handler.remove_item(form.introspection_caminho)" type="button" role="button"
+          class="z-3 position-absolute top-0 start-0 translate-middle badge border border-light rounded-circle bg-danger ">
+          x
+        </button>
+        <button class="nav-link" :id="`${form.introspection_caminho}-tab`" data-bs-toggle="tab"
+          :data-bs-target="`#${form?.introspection_caminho}`" type="button" role="tab"
+          :aria-controls="`${form?.introspection_caminho}`" aria-selected="false" :class="index === 0 ? 'active' : ''"
+          :ref="inner_forms_handler.buttons_refs[form.introspection_caminho]">
+          {{ index + 1 }}: {{ get_form_field_content(form.introspection_caminho) ?? '(editando)' }}
+        </button>
 
-        <!-- Tab panes -->
-        <div class="tab-content">
-            <div v-for="[key, form], index in inner_forms_handler.inner_form_list.value" class="tab-pane"
-                :id="`${form.introspection_caminho}`" role="tabpanel"
-                :aria-labelledby="`${form?.introspection_caminho}-tab`"
-                :class="index === 0 ? 'active' : ''"
-                :key="form.introspection_caminho">
-                <!-- {{ `${form?.introspection_caminho}` }}  -->
-                <Form v-bind="form"  />
-            </div>
-        </div>
-    </article>
+      </li>
+      <li class="nav-item " role="presentation" aria-selected="false">
+        <button @click="() => inner_forms_handler.novo_item_form()" class="nav-link">
+          <i type="button" class="bi bi-plus"></i>
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div v-for="form, index in inner_forms_handler.form_components_props.value" class="tab-pane"
+        :id="`${form.introspection_caminho}`" role="tabpanel" :aria-labelledby="`${form?.introspection_caminho}-tab`"
+        :class="index === 0 ? 'active' : ''" :key="form.introspection_caminho">
+
+        <Form v-bind="form" />
+      </div>
+    </div>
+  </article>
 </template>
