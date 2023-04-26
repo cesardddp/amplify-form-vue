@@ -38,7 +38,6 @@ function add_item(key_valor_existente?: string) {
             const index = items.length;
             const key = `${props.introspect_caminho}.${index}`
             const value = global_form_state_handler.state_as_Map.get(key_valor_existente ?? key)!
-            // debugger
             if (!value.value || items.find(rfv => rfv.value === value.value)) {
                 invalid.msg = !value.value ? 'Item não pode ser vazio!' : 'Item já existe!'
                 invalid.show = true, setTimeout(() => {
@@ -65,7 +64,7 @@ function del_item(global_key?: number) {
             i.splice(global_key ?? i.length - 1, 1)
             i.forEach((v, indice) => {
                 global_form_state_handler.state_as_Map
-                    .set(`${props.introspect_caminho}.${indice}`,v)
+                    .set(`${props.introspect_caminho}.${indice}`, v)
             })
             global_form_state_handler.state_as_Map.delete(
                 `${props.introspect_caminho}.${n_items - 1}`
@@ -78,7 +77,6 @@ function del_item(global_key?: number) {
 
 const inner_props = computed(() => {
     console.log('update cmp', items().length);
-    // debugger
     const _props = { //define diferenças de cada props de cada elemento interno
         is: markRaw(props.inner_component.is),
 
@@ -90,7 +88,6 @@ const inner_props = computed(() => {
             description: '',
             introspect_caminho: `${props.introspect_caminho}.${items().length}`,
             input_html_element: shallowRef(),
-            unset_form_field_from_state_when_component_unmount: false//props.form_fields_gbl_state_unseters
         }
     } satisfies ItemsProps['inner_component'];
     return _props
@@ -108,12 +105,11 @@ onMounted(() => {
     })
 })
 
-
-
 </script>
 <template>
     <section class="border rounded p-1 container">
-        {{nome}}: <span v-for="item, index in items()" class="badge rounded-pill px-3 bg-primary me-1 position-relative" :key="index">
+        {{ nome }}: <span v-for="item, index in items()" class="badge rounded-pill px-3 bg-primary me-1 position-relative"
+            :key="index">
             {{ item.value }}
             <span @click="() => del_item(index)"
                 class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger z-1">
@@ -128,17 +124,10 @@ onMounted(() => {
                     @keyup.enter="() => add_item()" @keyup.shift.delete="del_item()"
                     :key="inner_props.props.introspect_caminho">
                 </component>
-                <!-- <component :ref="inner_props.props.introspect_caminho" :is="inner_props.is" v-bind="inner_props.props"
-                    @keyup.enter="() => add_item()" @keyup.shift.delete="del_item()"
-                    :key="inner_props.props.introspect_caminho">
-                </component> -->
                 <div class="text-danger" :class="invalid.show ? '' : 'd-none'">
                     {{ invalid.msg }}
                 </div>
-
-
             </div>
-
             <i @click="() => add_item()" type="button"
                 class="border rounded-end border-success text-center fs-2 text-success my-auto bi bi-plus col-1"
                 :disabled="disabled"></i>

@@ -18,12 +18,6 @@ const global_form_state_handler = (inject('form_state_handler') as FormStateHand
 const _ref = global_form_state_handler.state_as_Map.get(props.introspect_caminho) ??
     global_form_state_handler.addRef(props.introspect_caminho, false)
 
-// if (props.form_fields_gbl_state_unseters)
-//     props.form_fields_gbl_state_unseters.push(
-//         () => {
-//             global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}`)
-//         }
-//     )
 
 const value = computed({
     get() {
@@ -158,11 +152,7 @@ onMounted(() => {
         props.input_html_element.value = this_select.value
     }
 });
-onUnmounted(() => {
-    if (props.unset_form_field_from_state_when_component_unmount) {
-        global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}`)
-    }
-})
+
 </script>
 <template>
     <!-- <FieldWithError props.fieldSize={adaptiveFieldSize} theme={theme} {...rest}> -->

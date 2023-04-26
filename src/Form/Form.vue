@@ -37,7 +37,7 @@ function set_qtd_itens(e: {
                 v-bind="form_field.form_component_info.props"
                 v-bind:introspect_caminho="`${introspection_caminho}.${form_field.nome}`"
                 :key="form_field.form_component_info.props.introspect_caminho"
-                v-bind:form_fields_gbl_state_unseters="form_fields_gbl_state_unseters">
+                >
             </component>
         </div>
     </div>
@@ -68,7 +68,7 @@ function set_qtd_itens(e: {
             :aria-labelledby="sub_forms.filho.name + '-tab'">
             <FormHandler :introspection_caminho="`${introspection_caminho}.${sub_forms.filho.name}`"
                 :form_name="sub_forms.filho.type" :key="sub_forms.filho.type" :is_multipleform_item="true"
-                :field_name="sub_forms.filho.name" :form_fields_gbl_state_unseters="form_fields_gbl_state_unseters"
+                :field_name="sub_forms.filho.name" 
                 @qtos_forms="set_qtd_itens" />
         </div>
     </section>

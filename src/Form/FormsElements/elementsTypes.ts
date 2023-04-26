@@ -1,7 +1,6 @@
 import SelectField from "./SelectField.vue";
 import Items from "./Items.vue";
 import Input from "./Input.vue";
-import { Unset_from_global_state } from "../formTypes";
 import { ShallowRef } from "vue";
 
 export type OpcoesValidacoes = '' | 'required' | `minLength:${number}` | `maxLength:${number}`;
@@ -15,9 +14,8 @@ type BaseComponent = {
     bs_class_wrap?: string;
     bs_class_input?: string;
     bs_class_label?: string;
-    introspect_caminho?: string;
+    introspect_caminho: string;
     validacoes?: OpcoesValidacoes[];
-    unset_form_field_from_state_when_component_unmount?: boolean //Unset_from_global_state;
     input_html_element?:ShallowRef<HTMLInputElement|undefined>;
 }
 

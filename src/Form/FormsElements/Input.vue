@@ -150,11 +150,6 @@ onMounted(() => {
         props.input_html_element.value = this_input.value
     }
 });
-onUnmounted(()=>{
-    if (props.unset_form_field_from_state_when_component_unmount){
-        global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}`)
-    }
-})
 
 </script>
 <template>
