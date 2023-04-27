@@ -16,7 +16,8 @@ type BaseComponent = {
     bs_class_label?: string;
     introspect_caminho?: string;
     validacoes?: OpcoesValidacoes[];
-    input_html_element?:ShallowRef<HTMLInputElement|undefined>;
+    focus_on_mount?:boolean;
+    // focus_on_mount?:ShallowRef<HTMLInputElement|undefined>;
 }
 
 type InnerComponent = {

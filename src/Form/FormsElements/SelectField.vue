@@ -148,8 +148,8 @@ onMounted(() => {
         trigger: 'hover',
         placement: 'left'
     });
-    if (props.input_html_element) {
-        props.input_html_element.value = this_select.value
+    if (props.focus_on_mount) {
+        this_select.value.focus();
     }
 });
 
