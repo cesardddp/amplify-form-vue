@@ -32,12 +32,10 @@ function set_qtd_itens(e: {
 <template>
     <!-- ITEM FIELDS -->
     <div role="form" :class="set_opacity ? 'opacity-50' : ''">
-        <div @click="set_opacity = false">
-            <component v-for="form_field, index in input.form_fields" :is="form_field.form_component_info.is" class="my-1"
-                v-bind="form_field.form_component_info.props"
+        <div @click="set_opacity = false" class="my-1" v-for="form_field, index in input.form_fields">
+            <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"
                 v-bind:introspect_caminho="`${introspection_caminho}.${form_field.nome}`"
-                :key="form_field.form_component_info.props.introspect_caminho"
-                >
+                :key="form_field.form_component_info.props.introspect_caminho">
             </component>
         </div>
     </div>
@@ -68,8 +66,7 @@ function set_qtd_itens(e: {
             :aria-labelledby="sub_forms.filho.name + '-tab'">
             <FormHandler :introspection_caminho="`${introspection_caminho}.${sub_forms.filho.name}`"
                 :form_name="sub_forms.filho.type" :key="sub_forms.filho.type" :is_multipleform_item="true"
-                :field_name="sub_forms.filho.name" 
-                @qtos_forms="set_qtd_itens" />
+                :field_name="sub_forms.filho.name" @qtos_forms="set_qtd_itens" />
         </div>
     </section>
 </template>
