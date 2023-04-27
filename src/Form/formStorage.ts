@@ -1,4 +1,4 @@
-import { markRaw, reactive, Ref, shallowRef, watch } from 'vue';
+import { computed, markRaw, reactive, Ref, shallowRef, watch } from 'vue';
 import objPath from "object-path";
 import _ from 'lodash';
 
@@ -35,15 +35,17 @@ export class FormStateHandler {
 
     }
     get_final_json() {
-        const json = {};
-        for (let k of this.state_as_Map.keys()) {
-            objPath.set(
-                json,
-                k,
-                this.state_as_Map.get(k)?.value
-            )
-        }
-        return json
+        return computed(() => {
+            const json = {};
+            for (let k of this.state_as_Map.keys()) {
+                objPath.set(
+                    json,
+                    k,
+                    this.state_as_Map.get(k)?.value
+                )
+            }
+            return json
+        })
     }
 
     tt_final_json() {

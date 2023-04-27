@@ -119,18 +119,21 @@ onMounted(() => {
         </span>
 
         <div class="row align-items-center mt-1">
-            <div class="col">
-                <component :ref="inner_props.props.introspect_caminho" :is="inner_props.is" v-bind="inner_props.props"
-                    @keyup.enter="() => add_item()" @keyup.shift.delete="del_item()"
+            <div class="col-11">
+                <component v-if="items().length" :ref="inner_props.props.introspect_caminho" :is="inner_props.is"
+                    v-bind="inner_props.props" @keyup.enter="() => add_item()" @keyup.shift.delete="del_item()"
                     :key="inner_props.props.introspect_caminho">
                 </component>
                 <div class="text-danger" :class="invalid.show ? '' : 'd-none'">
                     {{ invalid.msg }}
                 </div>
             </div>
-            <i @click="() => add_item()" type="button"
-                class="border rounded-end border-success text-center fs-2 text-success my-auto bi bi-plus col-1"
-                :disabled="disabled"></i>
+            <div class="col-1">
+                <button class="btn btn-outline-success rounded-end btn-sm">
+                    <i @click="() => add_item()" type="button" class="   my-auto bi bi-plus col"
+                        :disabled="disabled"></i>
+                </button>
+            </div>
         </div>
     </section>
 </template>

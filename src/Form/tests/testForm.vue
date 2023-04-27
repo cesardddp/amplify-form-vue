@@ -2,7 +2,7 @@
 import AmplifyFormVue from "../AmplifyForm.vue"
 import schema from "../../file_tests/schema_24_02_com_modulos_e_grupos.json";
 import Input from "../FormsElements/Input.vue";
-import { computed, reactive, Ref, ref, shallowRef, watch, watchEffect } from "vue";
+import { computed, ComputedRef, reactive, Ref, ref, shallowRef, watch, watchEffect } from "vue";
 import test_suite from "./test-parse-introspection";
 import { IntrospectionSchema } from "../../introspectionSchemaInterface";
 import { Cache } from "aws-amplify";
@@ -10,7 +10,6 @@ import VueJsonPretty from 'vue-json-pretty';
 import 'vue-json-pretty/lib/styles.css';
 import { FormStateHandler } from "../formStorage";
 import _ from "lodash";
-import { current } from "immer";
 // // campo teste
 const form_campo = {
     introspectionSchema: schema as IntrospectionSchema,
@@ -54,11 +53,19 @@ const tab = reactive({
     }
 })
 const current_state_storage = shallowRef<FormStateHandler>()
+let json_result : ComputedRef
+function set_json_result(e:ComputedRef) {
+    json_result = e
+}
+function set_current_state_storage(e: unknown) {
+    current_state_storage.value = e as FormStateHandler
+}
 const current_state = computed(() => {
     let view_state: unknown = undefined;
+    console.log("printando "+ (convert_json.value?' json_result':'obj entries'));
     if (current_state_storage.value)
         view_state = convert_json.value ?
-            current_state_storage.value.tt_final_json() :
+            json_result :
             Object.fromEntries(
                 Array.from(
                     current_state_storage.value.state_as_Map.entries(),
@@ -71,6 +78,7 @@ const current_state = computed(() => {
 const deep = ref(1)
 const pretify = ref(false)
 const form_types_to_show = ref(false)
+
 </script>
 <template>
     <nav class="nav justify-content-center my-4">
@@ -92,8 +100,8 @@ const form_types_to_show = ref(false)
 
             <div class="col">
                 <AmplifyFormVue v-bind="{ introspectionSchema: schema as IntrospectionSchema, entity_name: testando.quem }"
-                    @field_value_update="field_value_update" @form_result="e => current_state_storage = e"
-                    @form_types="e => form_types_to_show = e" :key="testando.quem" />
+                    @field_value_update="field_value_update" @form_result="set_current_state_storage"
+                    @json_result="set_json_result" @form_types="e => form_types_to_show = e" :key="testando.quem" />
             </div>
             <div class="col-4">
                 <div class="sticky-top">
@@ -125,7 +133,7 @@ const form_types_to_show = ref(false)
                                     </label>
                                 </div>
                             </div>
-
+                            /////////{{ json_result }} /////////
                             <pre v-if="!pretify">{{ current_state }}</pre>
                             <vue-json-pretty v-else :data="(current_state as any)" :deep="5" :key="5" :editable="false"
                                 :showSelectController="true" />

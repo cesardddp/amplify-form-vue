@@ -10,7 +10,7 @@ export default defineComponent({
         introspectionSchema: { type: Object as PropType<IntrospectionSchema>, required: true },
         entity_name: { type: String, required: true }
     },
-    emits: ['form_result', 'field_value_update', 'form_types'],
+    emits: ['form_result', 'field_value_update', 'form_types','json_result'],
     components: {
         FormHandler
     },
@@ -19,11 +19,8 @@ export default defineComponent({
     ) {
 
         const form_state_handler = new FormStateHandler(emit)// inicializa o gerenciador de estado global do amplify form
+        emit('json_result', form_state_handler.get_final_json())
         emit('form_result', form_state_handler)
-        watch(form_state_handler.state_as_Map, () => {
-            emit('form_result', form_state_handler)
-        })
-
 
         const form_types = IntrospectionParser(
             props.entity_name,
