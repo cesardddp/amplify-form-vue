@@ -1,6 +1,8 @@
 import { computed, markRaw, reactive, Ref, shallowRef, watch } from 'vue';
 import objPath from "object-path";
 import _ from 'lodash';
+import { Cache } from 'aws-amplify';
+import { FormFieldStyle } from './FormsElements/elementsTypes';
 
 
 export class FormStateHandler {
@@ -57,3 +59,110 @@ export class FormStateHandler {
 }
 
 
+
+export class FormStylingHandler {
+
+    private cacheKeyPrefix = "style."
+
+    private style_state_as_Map = reactive(new Map<string, Ref<FormFieldStyle>>())
+
+    constructor() {
+        const cache_keys = (Cache.getAllKeys() as string[]).filter(k => k.startsWith(this.cacheKeyPrefix));
+        for (let k of cache_keys) {
+            this.style_state_as_Map.set(
+                k,
+                shallowRef<FormFieldStyle>(Cache.getItem(k, ))
+            )
+        }
+    }
+
+    get_field_references(introspection_caminho: string) {
+        const key = this.cacheKeyPrefix + introspection_caminho;
+
+        if (!this.style_state_as_Map.has(key)) {
+            const new_v = {
+                bs_class_wrap: "",
+                bs_class_label: "",
+                bs_class_input: "",
+                esconder: false,
+                nao_usar: false,
+            } satisfies FormFieldStyle;
+            this.style_state_as_Map.set(
+                key,
+                shallowRef(new_v)
+            )
+            Cache.setItem(
+                key,
+                new_v
+            )
+        }
+
+
+        const bs_class_label = computed({
+            get: () => this.style_state_as_Map.get(key)!.value.bs_class_label,
+            set: (value) => {
+                this.style_state_as_Map.get(key)!.value = {
+                    ...this.style_state_as_Map.get(key)!.value,
+                    bs_class_label: value
+                }
+                Cache.setItem(
+                    key,
+                    this.style_state_as_Map.get(key)!.value
+                )
+            }
+        })
+        const bs_class_input = computed({
+            get: () => this.style_state_as_Map.get(key)!.value.bs_class_input,
+            set: (value) => {
+                this.style_state_as_Map.get(key)!.value = {
+                    ...this.style_state_as_Map.get(key)!.value,
+                    bs_class_input: value
+                }
+                Cache.setItem(
+                    key,
+                    this.style_state_as_Map.get(key)!.value
+                )
+            }
+        })
+        const bs_class_wrap = computed({
+            get: () => this.style_state_as_Map.get(key)!.value.bs_class_wrap,
+            set: (value) => {
+                this.style_state_as_Map.get(key)!.value = {
+                    ...this.style_state_as_Map.get(key)!.value,
+                    bs_class_wrap: value
+                }
+                Cache.setItem(
+                    key,
+                    this.style_state_as_Map.get(key)!.value
+                )
+            }
+
+        })
+
+        const clear_style = () => {
+            Cache.setItem(
+                key,
+                {
+                    bs_class_wrap: "",
+                    bs_class_label: "",
+                    bs_class_input: ""
+                }
+            )
+            this.style_state_as_Map.get(key)!.value = {
+                bs_class_wrap: "",
+                bs_class_label: "",
+                bs_class_input: "",
+                esconder: false,
+                nao_usar: false
+            }
+        }
+
+        return {
+            bs_class_label,
+            bs_class_input,
+            bs_class_wrap,
+            clear_style
+
+        }
+    }
+}

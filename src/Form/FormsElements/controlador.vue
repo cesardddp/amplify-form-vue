@@ -1,47 +1,19 @@
 <script setup lang="ts">
-import { Ref, computed, reactive, ref, toRef, toRefs, watchEffect } from 'vue';
-
+import { Ref, computed, reactive, ref, toRef, toRefs, watchEffect, inject } from 'vue';
+import { FormStylingHandler } from '../formStorage';
+import { InputProps, SelectProps, ItemsProps } from "./elementsTypes";
 
 const slot_props = defineProps<{
-    component: {
-        nome: string;
-        cpnt: any;
-        test: any;
-        comentarios: string;
-        createdAt: string;
-        props: {
-            [k: string]: any;
-        }
-    },
-    css_props: string[]
+    introspect_caminho: string
 }>(
-    // [
-    // 'padrao',
-    // 'nome',
-    // 'cpnt',
-    // 'test',
-    // 'comentarios',
-    // 'createdAt',
-    // 'props',
-    // ]
 );
 
-
-
-// NÃO USADO MAS PODE SER ÚTIL
-// const nome = slot_props.component?.nome  //"NumberFieldSF";
-// const cpnt = slot_props.component?.cpnt  //'Input';
-// const test = slot_props.component?.test  //0;
-// const comentarios = slot_props.component?.comentarios  //'';
-// const createdAt = slot_props.component?.createdAt  //'';
-
-// type css_areas = slot_props.css_props;
-if (slot_props.css_props.length < 1) throw new Error("Informe quais props são CSSs strings");
-const props_com_css_bs_classes = ref(slot_props.css_props.at(2) ?? '')
-const component = toRef(slot_props, 'component')
+const props_com_css_bs_classes = ref<'bs_class_wrap' | 'bs_class_label' | 'bs_class_input'>('bs_class_input')
 const posicao_selecionada = ref<'p' | 'm'>('m') //margin padding
 
-const css_areas = slot_props.css_props;//['wrap', 'label', 'input']
+
+
+const formStylingHandler = (inject("form_styling_handler") as FormStylingHandler).get_field_references(slot_props.introspect_caminho!);
 
 // SELEÇÃO DO TAMANHO DE MARGEM E PADDING
 const get_computed = (posicao: 's' | 'e' | 't' | 'b') => {
@@ -49,23 +21,25 @@ const get_computed = (posicao: 's' | 'e' | 't' | 'b') => {
     return computed({
         get() {
             const regex_pos_pos = new RegExp(`\\b[${posicao_selecionada.value}][${posicao}]+-\\d`, "g");
-            return component.value.props[
+            return formStylingHandler[
                 props_com_css_bs_classes.value
-            ]?.match(regex_pos_pos)?.pop()?.at(3) ?? '0'
+            ].value.match(regex_pos_pos)?.pop()?.at(3) ?? '0'
         },
         set(value) {
-            if (value > 5 || value < 0) return;
+            if (value > '5' || value < '0') return;
             const regex_pos_pos = new RegExp(`\\b[${posicao_selecionada.value}][${posicao}]+-\\d`, "g");
-            let bs_class: string = component.value.props[
+
+            let bs_class = formStylingHandler[
                 props_com_css_bs_classes.value
             ]
-            const matchs = bs_class.match(regex_pos_pos)
+
+            const matchs = bs_class.value.match(regex_pos_pos)
             matchs?.forEach((m: string) => {
-                bs_class = bs_class.replace(m, '').trim()
+                bs_class.value = bs_class.value.replace(m, '').trim()
             });
-            component.value.props[
-                props_com_css_bs_classes.value
-            ] = bs_class + (value != "" ? ` ${posicao_selecionada.value}${posicao}-${value}` : "")
+
+            bs_class.value = bs_class.value + (value ? ` ${posicao_selecionada.value}${posicao}-${value}` : "")
+
         }
     })
 }
@@ -91,9 +65,9 @@ function get_computed_color(txt_bg: 'text-bg-' | 'text-') {
     return computed({
         get() {
             const regex_pos_pos = new RegExp(`${txt_bg}(${cores.filter(p => p).join('|')})`, "g");
-            const a = component.value.props[
+            const a = formStylingHandler[
                 props_com_css_bs_classes.value
-            ]?.match(regex_pos_pos)?.pop().replace(`${txt_bg}`, '') ?? ''
+            ].value.match(regex_pos_pos)?.pop()?.replace(`${txt_bg}`, '') ?? ''
 
             return a
         },
@@ -101,17 +75,14 @@ function get_computed_color(txt_bg: 'text-bg-' | 'text-') {
             const regex_pos_pos = new RegExp(`${txt_bg}(${cores.filter(p => p).join('|')})`, "g");
             // console.log(regex_pos_pos);
 
-            let bs_class: string = component.value.props[
+            let bs_class = formStylingHandler[
                 props_com_css_bs_classes.value
             ]
-            const matchs = bs_class.match(regex_pos_pos)
+            const matchs = bs_class.value.match(regex_pos_pos)
             matchs?.forEach((m: string) => {
-                bs_class = bs_class.replace(m, '').trim()
+                bs_class.value = bs_class.value.replace(m, '').trim()
             });
-
-            component.value.props[
-                props_com_css_bs_classes.value
-            ] = bs_class + (value ? ` ${txt_bg}${value}` : '')
+            bs_class.value = bs_class.value + (value ? ` ${txt_bg}${value}` : '')
         }
     })
 }
@@ -126,9 +97,9 @@ function get_computed_size(txt_bg: 'fs-') {
     return computed({
         get() {
             const regex_pos_pos = new RegExp(`${txt_bg}(${fs.filter(p => p).join('|')})`, "g");
-            const a = component.value.props[
+            const a = formStylingHandler[
                 props_com_css_bs_classes.value
-            ]?.match(regex_pos_pos)?.pop().replace(`${txt_bg}`, '') ?? ''
+            ].value.match(regex_pos_pos)?.pop()?.replace(`${txt_bg}`, '') ?? ''
 
             return a
         },
@@ -136,17 +107,17 @@ function get_computed_size(txt_bg: 'fs-') {
             const regex_pos_pos = new RegExp(`${txt_bg}(${fs.filter(p => p).join('|')})`, "g");
             // console.log(regex_pos_pos);
 
-            let bs_class: string = component.value.props[
+            let bs_class = formStylingHandler[
                 props_com_css_bs_classes.value
             ]
-            const matchs = bs_class.match(regex_pos_pos)
+            const matchs = bs_class.value.match(regex_pos_pos)
             matchs?.forEach((m: string) => {
-                bs_class = bs_class.replace(m, '').trim()
+                bs_class.value = bs_class.value.replace(m, '').trim()
             });
 
-            component.value.props[
-                props_com_css_bs_classes.value
-            ] = bs_class + (value ? ` ${txt_bg}${value}` : '')
+
+            bs_class.value + (value ? ` ${txt_bg}${value}` : '')
+
         }
     })
 }
@@ -163,9 +134,9 @@ function get_computed_posicao(txt_bg: 'text-') {
     return computed({
         get() {
             const regex_pos_pos = new RegExp(`${txt_bg}(${text_posicoes.filter(p => p).join('|')})`, "g");
-            const a = component.value.props[
+            const a = formStylingHandler[
                 props_com_css_bs_classes.value
-            ]?.match(regex_pos_pos)?.pop().replace(`${txt_bg}`, '') ?? ''
+            ].value.match(regex_pos_pos)?.pop()?.replace(`${txt_bg}`, '') ?? ''
 
             return a
         },
@@ -173,64 +144,57 @@ function get_computed_posicao(txt_bg: 'text-') {
             const regex_pos_pos = new RegExp(`${txt_bg}(${text_posicoes.filter(p => p).join('|')})`, "g");
             // console.log(regex_pos_pos);
 
-            let bs_class: string = component.value.props[
+            let bs_class = formStylingHandler[
                 props_com_css_bs_classes.value
             ]
-            const matchs = bs_class.match(regex_pos_pos)
+            const matchs = bs_class.value.match(regex_pos_pos)
             matchs?.forEach((m: string) => {
-                bs_class = bs_class.replace(m, '').trim()
+                bs_class.value = bs_class.value.replace(m, '').trim()
             });
 
-            component.value.props[
-                props_com_css_bs_classes.value
-            ] = bs_class + ` ${txt_bg}${value}`
+
+            bs_class.value + ` ${txt_bg}${value}`
+
         }
     })
 }
 const text_posicao = get_computed_posicao('text-')
-
-
-
-/////
-const props = computed(
-    () => {
-
-        const bs_classes = (Object.fromEntries(css_areas.map(css_area => {
-            const bs_class = component.value.props[css_area];
-            return [
-                css_area,
-                bs_class
-            ]
-        })))
-        return {
-            ...slot_props.component?.props,
-            ...bs_classes.value
-        }
-    } //
-)
-
+const ocultar = computed({
+    get(){
+        return formStylingHandler.bs_class_wrap
+    },
+    set(){}
+})
+const nao_usar = computed({
+    get(){
+        return formStylingHandler.bs_class_wrap
+    },
+    set(){}
+})
 </script>
 <template>
     <nav id="nav" class="row p-1 m-1">
         <ul class="nav nav-tabs" id="navId" role="tablist">
 
-            <span class="my-2 text-primary"> Editando:
-                <strong class="text-danger"></strong></span>
+            <span class="my-2 text-primary"> Editando: </span>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle text-danger" data-bs-toggle="dropdown" href="#" role="button"
-                    aria-haspopup="true" aria-expanded="false"> <strong>
-                        {{ props_com_css_bs_classes }}
-                    </strong></a>
+                <a class="nav-link dropdown-toggle text-danger" data-bs-toggle="dropdown" role="button" aria-haspopup="true"
+                    aria-expanded="false">
+                    <strong>{{ props_com_css_bs_classes }}</strong>
+                </a>
                 <div class="dropdown-menu">
-                    <a v-for="prop in slot_props.css_props" @click="props_com_css_bs_classes = prop"
-                        class="dropdown-item">{{ prop }}</a>
+                    <a @click="props_com_css_bs_classes = 'bs_class_wrap'" class="dropdown-item">bs_class_wrap</a>
+                    <a @click="props_com_css_bs_classes = 'bs_class_input'" class="dropdown-item">bs_class_input</a>
+                    <a @click="props_com_css_bs_classes = 'bs_class_label'" class="dropdown-item">bs_class_label</a>
                 </div>
             </li>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle text-danger" data-bs-toggle="dropdown" href="#" role="button"
-                    aria-haspopup="true" aria-expanded="false"> <strong>
-                        {{ posicao_selecionada=== 'm' ? "Margem" : "Preenchimento" }}
-                    </strong></a>
+                <a class="nav-link dropdown-toggle text-danger" data-bs-toggle="dropdown" role="button" aria-haspopup="true"
+                    aria-expanded="false">
+                    <strong>
+                        {{ posicao_selecionada === 'm' ? "Margem" : "Preenchimento" }}
+                    </strong>
+                </a>
                 <div class="dropdown-menu">
                     <a @click="posicao_selecionada = 'm'" class="nav-link text-success active"
                         data-bs-toggle="tab">Margem</a>
@@ -238,75 +202,87 @@ const props = computed(
                         data-bs-toggle="tab">Preenchimento</a>
                 </div>
             </li>
+            <li class="">
+                <a @click="formStylingHandler.clear_style" class="nav-link text-success"
+                    data-bs-toggle="tab">clear_style</a>
+            </li>
         </ul>
     </nav>
-    <div id="color" class="row text-primary">
-        <div class="col-3">
+    <div class="row row-cols-4 text-primary">
+        <div class="col">
             <label for="bg_color" class="form-label">Cor do background</label>
             <select v-model="bg_color" :class="'text-bg-' + bg_color"
                 class="form-select form-select-sm border border-primary" name="bg_color" id="bg_color">
-                <option v-for="cor in cores" :value="cor">{{ cor?cor: '(nenhum)' }}</option>
+                <option v-for="cor in cores" :value="cor">{{ cor ? cor : '(nenhum)' }}</option>
             </select>
         </div>
-        <div class="col-3">
+        <div class="col">
             <label for="text_color" class="form-label">Cor do texto</label>
             <select v-model="text_color" :class="'text-bg-' + text_color"
                 class="form-select form-select-sm border border-primary" name="text_color" id="text_color">
-                <option v-for="cor in cores" :value="cor">{{ cor?cor: '(nenhum)' }}</option>
+                <option v-for="cor in cores" :value="cor">{{ cor ? cor : '(nenhum)' }}</option>
             </select>
         </div>
-        <div class="col-3">
+        <div class="col">
             <label for="text_color" class="form-label">Tamanho do texto</label>
             <select v-model="text_size" class="form-select form-select-sm border border-primary" name="text_color"
                 id="text_color">
                 <option v-for="size in fs" :class="'fs-' + size" :value="size">{{ size }}</option>
             </select>
         </div>
-        <div class="col-3">
+        <div class="col">
             <label for="text_posicao" class="form-label">Posicao do texto</label>
             <select v-model="text_posicao" class="form-select form-select-sm border border-primary" name="text_posicao"
                 id="text_posicao">
                 <option v-for="posic in text_posicoes" :class="'fs-' + posic" :value="posic">{{ posic }}</option>
             </select>
         </div>
+        <div class="col">
+            <label for="text_posicao" class="form-label">Ocultar</label>
+            <input type="checkbox" v-model="ocultar">
+        </div>
+        <div class="col">
+            <label for="text_posicao" class="form-label">Não Usar</label>
+            <input type="checkbox" v-model="nao_usar">
+        </div>
+
     </div>
     <div id="controler" class="row mt-1 ">
         <div class="col-12 row justify-content-center ">
             <!-- <input v-model="top" class="col-2" type="number" min="0" max="5"> -->
-            <button @click="top = parseInt(top) + 1" type="button"
+            <button @click="top = (Number(top) + 1).toString()" type="button"
                 class="btn col-1 btn-outline-primary btn-sm bi bi-arrow-bar-up"></button>
             <span class="text-center"> {{ top }}</span>
-            <button @click="top = parseInt(top) - 1" type="button"
+            <button @click="top = (Number(top) - 1).toString()" type="button"
                 class="btn col-1 btn-outline-primary btn-sm bi bi-arrow-bar-down"></button>
         </div>
         <div class="col-2 row align-items-center">
             <!-- <input v-model="start" class="w-100" type="number" min="0" max="5"> -->
-            <button @click="start = parseInt(start) + 1" type="button"
+            <button @click="start = (Number(start) + 1).toString()" type="button"
                 class="btn  btn-outline-primary btn-sm bi bi-arrow-bar-right"></button>
             <span class="text-center"> {{ start }}</span>
-            <button @click="start = parseInt(start) - 1" type="button"
+            <button @click="start = (Number(start) - 1).toString()" type="button"
                 class="btn  btn-outline-primary btn-sm bi bi-arrow-bar-left"></button>
         </div>
+        <div class="col-8 border border-primary d-grid align-items-center">
+            <slot />
 
-            <slot :props="props">
-
-            </slot>
-
+        </div>
         <div class="col-2 row d-flex flex-row align-items-center">
             <!-- <input v-model="end" class="w-100" type="number" min="0" max="5"> -->
-            <span @click="end = parseInt(end) + 1" type="button"
+            <span @click="end = (Number(end) + 1).toString()" type="button"
                 class="btn  btn-outline-primary btn-sm bi bi-arrow-bar-right"></span>
             <span class="text-center "> {{ end }}</span>
-            <i @click="end = parseInt(end) - 1" type="button"
+            <i @click="end = (Number(end) - 1).toString()" type="button"
                 class="btn  btn-outline-primary btn-sm bi bi-arrow-bar-left"></i>
         </div>
 
         <div class="col-12  row justify-content-center ">
             <!-- <input v-model="bottom" class="col-2" type="number" min="0" max="5"> -->
-            <button @click="bottom = parseInt(bottom) + 1" type="button"
+            <button @click="bottom = (Number(bottom) + 1).toString()" type="button"
                 class="btn col-1 btn-outline-primary btn-sm bi bi-arrow-bar-up"></button>
             <span class="text-center"> {{ bottom }}</span>
-            <button @click="bottom = parseInt(bottom) - 1" type="button"
+            <button @click="bottom = (Number(bottom) - 1).toString()" type="button"
                 class="btn col-1 btn-outline-primary btn-sm bi bi-arrow-bar-down"></button>
         </div>
     </div>

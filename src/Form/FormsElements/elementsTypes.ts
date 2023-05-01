@@ -1,9 +1,16 @@
 import SelectField from "./SelectField.vue";
 import Items from "./Items.vue";
 import Input from "./Input.vue";
-import { ShallowRef } from "vue";
 
 export type OpcoesValidacoes = '' | 'required' | `minLength:${number}` | `maxLength:${number}`;
+
+export type FormFieldStyle = {
+    bs_class_wrap: string,
+    bs_class_label: string,
+    bs_class_input: string,
+    esconder: boolean,
+    nao_usar: boolean,
+}
 
 type BaseComponent = {
     nome: string;
@@ -11,13 +18,9 @@ type BaseComponent = {
     description?:string
     placeholder?: string;
     disabled?: boolean;
-    bs_class_wrap?: string;
-    bs_class_input?: string;
-    bs_class_label?: string;
     introspect_caminho?: string;
     validacoes?: OpcoesValidacoes[];
     focus_on_mount?:boolean;
-    // focus_on_mount?:ShallowRef<HTMLInputElement|undefined>;
 }
 
 type InnerComponent = {

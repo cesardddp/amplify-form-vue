@@ -1,8 +1,8 @@
 <script lang="ts">
 import { IntrospectionSchema } from "../introspectionSchemaInterface";
-import { defineComponent, provide, type PropType, watch } from "vue";
+import { defineComponent, provide, type PropType } from "vue";
 import IntrospectionParser, { getEnityInputType } from "./parse-introspection";
-import { FormStateHandler } from "./formStorage";
+import { FormStateHandler, FormStylingHandler } from "./formStorage";
 import FormHandler from "./FormHandler.vue";
 
 export default defineComponent({
@@ -32,6 +32,7 @@ export default defineComponent({
 
         provide("form_state_handler", form_state_handler)
         provide("form_types", form_types)
+        provide("form_styling_handler", new FormStylingHandler())
 
         return {
             input_nome: form_types.keys().next().value

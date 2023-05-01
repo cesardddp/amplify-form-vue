@@ -4,7 +4,7 @@ import Form from "./Form.vue";
 import { FormSchemasMap } from "./parse-introspection";
 import { FormProps } from "./formTypes";
 import FormHandler from "./FormHandler.vue";
-
+import FormFieldEditor from "./FormsElements/controlador.vue";
 
 const props = defineProps<FormProps>()
 
@@ -28,15 +28,31 @@ function set_qtd_itens(e: {
 }) {
     qtd_itens_dos_multiplos.set(e.quem, e.qtos)
 }
+const edit_mode = ref(true)
 </script>
 <template>
+    <div class="btn-group">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            Small button
+        </button>
+        <ul class="dropdown-menu">
+            <li @click="edit_mode = !edit_mode" class="dropdown-item">Edit mode</li>
+        </ul>
+    </div>
     <!-- ITEM FIELDS -->
     <div role="form" :class="set_opacity ? 'opacity-50' : ''">
-        <div @click="set_opacity = false" class="my-1" v-for="form_field, index in input.form_fields">
-            <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"
-                v-bind:introspect_caminho="`${introspection_caminho}.${form_field.nome}`"
-                :key="form_field.form_component_info.props.introspect_caminho">
-            </component>
+        <div @click="set_opacity = false" class="my-1" v-for="form_field in input.form_fields">
+            <FormFieldEditor v-if="edit_mode" :introspect_caminho="`${introspection_caminho}.${form_field.nome}`">
+                <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"
+                    v-bind:introspect_caminho="`${introspection_caminho}.${form_field.nome}`">
+                </component>
+            </FormFieldEditor>
+            <div v-else>
+                <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"
+                    v-bind:introspect_caminho="`${introspection_caminho}.${form_field.nome}`">
+                </component>
+            </div>
         </div>
     </div>
 
