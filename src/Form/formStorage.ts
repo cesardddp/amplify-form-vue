@@ -64,14 +64,15 @@ export class FormStylingHandler {
 
     private cacheKeyPrefix = "style."
 
-    private style_state_as_Map = reactive(new Map<string, Ref<FormFieldStyle>>())
+    style_state_as_Map = reactive(new Map<string, Ref<FormFieldStyle>>())
 
     constructor() {
+        // Cache.clear()
         const cache_keys = (Cache.getAllKeys() as string[]).filter(k => k.startsWith(this.cacheKeyPrefix));
         for (let k of cache_keys) {
             this.style_state_as_Map.set(
                 k,
-                shallowRef<FormFieldStyle>(Cache.getItem(k, ))
+                shallowRef<FormFieldStyle>(Cache.getItem(k))
             )
         }
     }
@@ -161,7 +162,33 @@ export class FormStylingHandler {
             bs_class_label,
             bs_class_input,
             bs_class_wrap,
-            clear_style
+            clear_style,
+            esconder: computed({
+                get: () => this.style_state_as_Map.get(key)!.value.esconder,
+                set: (value) => {
+                    this.style_state_as_Map.get(key)!.value = {
+                        ...this.style_state_as_Map.get(key)!.value,
+                        esconder: value
+                    }
+                    Cache.setItem(
+                        key,
+                        this.style_state_as_Map.get(key)!.value
+                    )
+                }
+            }),
+            nao_usar: computed({
+                get: () => this.style_state_as_Map.get(key)!.value.nao_usar,
+                set: (value) => {
+                    this.style_state_as_Map.get(key)!.value = {
+                        ...this.style_state_as_Map.get(key)!.value,
+                        nao_usar: value
+                    }
+                    Cache.setItem(
+                        key,
+                        this.style_state_as_Map.get(key)!.value
+                    )
+                }
+            }),
 
         }
     }

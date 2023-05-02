@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Popover, Tooltip } from "bootstrap";
 import { computed, inject, onMounted, onUnmounted, ref, toRef, watch } from "vue";
-import { FormStateHandler } from "../formStorage";
+import { FormStateHandler, FormStylingHandler } from "../formStorage";
 import type { SelectProps } from "./elementsTypes";
 
 
@@ -15,6 +15,8 @@ if (!props.introspect_caminho)
 
 
 const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
+const bs_classes = (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
+
 const _ref = global_form_state_handler.state_as_Map.get(props.introspect_caminho) ??
     global_form_state_handler.addRef(props.introspect_caminho, false)
 
@@ -175,13 +177,13 @@ className={`${selectStyle} ${fieldSizeMap.get(adaptiveFieldSize)}`}>
     <!-- :styles="{{ customStyles }}" -->
     <!-- </FieldWithError> -->
 
-
-    <div class="form-floating" data-bs-toggle="tooltip" :title="description" ref="this_select">
+    <div class="form-floating" :class="bs_classes.bs_class_wrap" data-bs-toggle="tooltip" :title="description" ref="this_select">
         <select class="form-select" :name="nome" :id="introspect_caminho" v-model="value" aria-label="Floating label select"
+        :class="bs_classes.bs_class_input"
             :required="validacao.validacoes.required">
             <option selected value="">Selecione uma opção...</option>
             <option v-for="op,index in options" :value="op.value" :key="index">{{ op.label ?? op.value }}</option>
         </select>
-        <label :for="introspect_caminho" class="form-label">{{ label ?? nome }}</label>
+        <label :for="introspect_caminho" class="form-label" :class="bs_classes.bs_class_label">{{ label ?? nome }}</label>
     </div>
 </template>

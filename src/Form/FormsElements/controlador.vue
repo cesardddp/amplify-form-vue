@@ -161,15 +161,16 @@ function get_computed_posicao(txt_bg: 'text-') {
 const text_posicao = get_computed_posicao('text-')
 const ocultar = computed({
     get(){
-        return formStylingHandler.bs_class_wrap
+        return formStylingHandler.bs_class_wrap.value.includes('d-none')
     },
-    set(){}
-})
-const nao_usar = computed({
-    get(){
-        return formStylingHandler.bs_class_wrap
-    },
-    set(){}
+    set(v){
+        if(v){
+            formStylingHandler.bs_class_wrap.value = formStylingHandler.bs_class_wrap.value + ' d-none'
+        }else{
+            formStylingHandler.bs_class_wrap.value = formStylingHandler.bs_class_wrap.value.replace('d-none', '').trim()
+        }
+        
+    }
 })
 </script>
 <template>
@@ -238,15 +239,18 @@ const nao_usar = computed({
             </select>
         </div>
         <div class="col">
-            <label for="text_posicao" class="form-label">Ocultar</label>
-            <input type="checkbox" v-model="ocultar">
+            <label for="ocultar" class="form-label">Ocultar</label>
+            <input type="checkbox" v-model="ocultar" name='ocultar'>
         </div>
         <div class="col">
-            <label for="text_posicao" class="form-label">Não Usar</label>
-            <input type="checkbox" v-model="nao_usar">
+                <label for="nao_usar" class="form-label">Não Usar</label>
+            <input type="checkbox" v-model="formStylingHandler.nao_usar.value" name="nao_usar">
         </div>
 
     </div>
+    <label class="text-primary" > classe atual
+        <input type="text" class="form-control" v-model="formStylingHandler[props_com_css_bs_classes].value">
+    </label>
     <div id="controler" class="row mt-1 ">
         <div class="col-12 row justify-content-center ">
             <!-- <input v-model="top" class="col-2" type="number" min="0" max="5"> -->

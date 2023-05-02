@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { Input } from "@syncfusion/ej2-inputs";
 import { onMounted, ref, computed, inject, onUnmounted } from "vue";
-import { FormStateHandler } from "../formStorage";
+import { FormStateHandler, FormStylingHandler } from "../formStorage";
 import type { InputProps, Validacoes } from "./elementsTypes";
 import { Tooltip } from "bootstrap";
+
 
 const props = withDefaults(defineProps<InputProps>(), {
     bootstrap_syncfusion: 'bs',
     type: 'text',
-    bs_class_wrap: '',
-    bs_class_input: '',
-    bs_class_label: '',
     description: 'Sem descrição.'
 })
 
@@ -68,14 +66,17 @@ const validacao = computed(() => {
         validacoes
     }
 })
+const bs_classes = (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
+
 const cssSFClass = computed(
     () => {
         const cssSyncFusion = props.cssSFClass ? props.cssSFClass : 'e-primary';
 
-        return (cssSyncFusion + ' ' + props.bs_class_input).trim().replace(/ +(?= )/g, '')
+        return (cssSyncFusion + ' ' + bs_classes.bs_class_input.value).trim().replace(/ +(?= )/g, '')
     }
     //a regex -> https://stackoverflow.com/questions/3286874/remove-all-multiple-spaces-in-javascript-and-replace-with-single-space
 )
+
 const bs_class_wrap = computed(() => {
     let base_wrap = '';
 
@@ -91,11 +92,11 @@ const bs_class_wrap = computed(() => {
         default:
             break;
     }
-    return base_wrap + ' ' + props.bs_class_wrap
+    return base_wrap + ' ' + bs_classes.bs_class_wrap.value
 }
 )
 const bs_class_label = computed(
-    () => (props.type === 'checkbox' ? 'form-check-label' : '') + ' ' + props.bs_class_label
+    () => (props.type === 'checkbox' ? 'form-check-label' : '') + ' ' + bs_classes.bs_class_label.value
 )
 const bs_class_input = computed(
     () => {
@@ -112,7 +113,7 @@ const bs_class_input = computed(
             default:
                 break;
         }
-        return base_input + ' ' + props.bs_class_input
+        return base_input + ' ' + bs_classes.bs_class_input.value
     }
 )
 const safeFieldSize = ref('md');//fieldSizeMap.get(fieldSize) ? fieldSize : 'md';        
@@ -150,7 +151,6 @@ onMounted(() => {
         this_input.value.focus();
     }
 });
-
 </script>
 <template>
     <div v-if="bootstrap_syncfusion === 'bs'">

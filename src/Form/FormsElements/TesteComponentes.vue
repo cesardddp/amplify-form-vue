@@ -328,12 +328,12 @@ const atualiza_comentario = (cp: any) => {
 
                         <section class="col-lg-9 col-sm-12">
                             <b>componente: </b>
-                            <Controlador v-slot="slotProps" :component="c"
+                            <!-- <Controlador v-slot="slotProps" :component="c"
                                 :css_props="['bs_class_input', 'bs_class_label', 'bs_class_wrap']">
                                 <div class="col-8 border border-primary d-grid align-items-center">
                                     <component :is="c.cpnt" v-bind="slotProps.props" v-model="c.test" :key="c.nome" />
                                 </div>
-                            </Controlador>
+                            </Controlador> -->
                             <div class="alert alert-info w-50" role="alert">
                                 Teste: <span class="bg-warning text-dark p-2"> {{ c.test }} </span>
                             </div>

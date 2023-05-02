@@ -5,14 +5,12 @@ import { FormStateHandler } from "../formStorage";
 import type { ItemsProps } from "./elementsTypes";
 
 const props = withDefaults(defineProps<ItemsProps>(), {
-    bootstrap_syncfusion: 'bs',
-    bs_class_wrap: '',
-    bs_class_input: '',
-    bs_class_label: '',
+    // bootstrap_syncfusion: 'bs',
     placeholder: 'Novo item',
 })
 
 const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
+const bs_classes = (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
 
 const items = computed(() => {
     return [...global_form_state_handler.state_as_Map.keys()]
