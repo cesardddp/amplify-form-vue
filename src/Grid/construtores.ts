@@ -1,22 +1,37 @@
-import { editTypes, ColunaConfigs,  Validadores, OpcoesTabela  } from "../../merm-schema/merm-types";
+import { Query } from "@syncfusion/ej2-data";
+import {
+    editTypes,
+    ColunaConfigs,
+    OnEditColuna,
+    Validadores,
+    OpcoesTabela,
+    editSettingsMode,
+    toolBarOptions
+} from "../../merm-schema/merm-types";
 
-// import { cpf, cnpj } = require("cpf-cnpj-validator");
+import { cpf, cnpj } from "cpf-cnpj-validator";
+
+
+
+
 
 export class Coluna {
     editavel: Boolean;
-    editType?: editTypes; // formType;
-    edit?: any;//SyncFusionEditConfig;
+    edit?: OnEditColuna;
     validationRules?: AddValidacao
     valor_padrao?: Function
+    editType: editTypes | null | undefined;
 
     private async configura_propriedade_Syncfusion__edit__() {
 
         if (!this.configs.editando) throw new Error(`Configurações de edição do campo ${this.configs.nome} vazias`);
 
-        let edit_result: any={//} SyncFusionEditConfig = {
+        let edit_result: {
             params: {
-                dataSource: undefined,
-                query:undefined// new Query()
+                dataSource?: unknown,
+                query?: Query,
+                fields?: unknown,
+                value?: Date | unknown
             }
         }
 
@@ -69,13 +84,23 @@ export class Coluna {
                 //     edit_result.params.allowFiltering = this.configs.editando.allowFiltering ?? false
                 // }
                 // else if (this.configs.editando.fonte_dados === 'estático') {
-                edit_result.params.dataSource = this.configs.editando.static
-                edit_result.params.fields = undefined
+                edit_result = {
+
+                    params: {
+                        dataSource: this.configs.editando.static,
+                        query: new Query()
+                    }
+                }
 
                 // }
                 break;
             case 'datepickeredit':
-                edit_result.params.value = new Date();
+                edit_result = {
+
+                    params: {
+                        value: new Date()
+                    }
+                }
                 break;
             case 'stringedit':
                 return undefined;
@@ -94,10 +119,10 @@ export class Coluna {
 
         this.editavel = configs.editando?.editavel ?? true;
         if (configs.editando) {
-            // this.editType = configs.editando.editType
+            this.editType = configs.editando.editType
             this.configura_propriedade_Syncfusion__edit__()
                 .then(cfg => {
-                    this.edit = cfg
+                    this.edit = cfg as any // TODO GAMBIARRA
                 })
         };
         if (configs.validadores) {
@@ -128,60 +153,67 @@ export class Coluna {
     }
 }
 
-export const opcoes_default = () => ({
-    titulo: { visibilidade: true },
+export const opcoes_default = {
+    titulo: { visibilidade: true, css_class: '',__typename: 'Titulo' },
     desabilitar_extensoes: [],
     paginacaoOpcoes: {
         allowPaging: true,
         pageSettings: {
             pageSize: 5,
+            __typename: 'PageSettings'
         },
+        __typename: 'PaginacaoOpcoes'
     },
     ordenacaoOpcoes: {
         allowSorting: true,
         sortSettings: {
             columns: [""],
+            __typename: 'SortSettings'
         },
+        __typename: 'OrdenacaoOpcoes'
     },
     editOpcoes: {
         allowEditing: true,
         allowAdding: true,
         allowDeleting: true,
-        mode: "Dialog" as const,
+        mode: editSettingsMode.Dialog,
+        __typename: 'EditOpcoes'
     },
     estiloOpcoes: {
         allowResizing: true,
+        __typename: 'EstiloOpcoes'
     },
     buscaOpcoes: {
+        __typename: 'BuscaOpcoes',
         fields: [],
         operator: "contains",
         key: "",
         ignoreCase: true,
     },
     filtroOpcoes: {
+        __typename: 'FiltroOpcoes',
         allowFiltering: false,
-
     },
     exportacaoOpcoes: {
+        __typename: 'ExportacaoOpcoes',
         allowPdfExport: false,
     },
     toolbar: [
-        "Add",
-        "Edit",
-        "Delete",
-        "Update",
-        "Cancel",
-        "Print",
-        "Search"],
+        toolBarOptions.Add,
+        toolBarOptions.Edit,
+        toolBarOptions.Delete,
+        toolBarOptions.Update,
+        toolBarOptions.Cancel,
+        toolBarOptions.Print,
+        toolBarOptions.Search
+    ],
     dialog_header: {
-        beginEdit: {
-            titulo: { prefix: 'Editando', campo: 'id', posfix: '' }
-        },
-        adding: {
-            titulo: "Novo registro"
-        },
-    }
-} satisfies OpcoesTabela)
+        __typename: 'Dialog_header',
+        beginEditTitulo: "Editando",
+        addingTitulo: "Novo registro",
+    },
+    __typename: 'OpcoesTabela'
+} satisfies OpcoesTabela;
 
 export class AddValidacao {
     constructor(public validadores: Validadores[]) {
