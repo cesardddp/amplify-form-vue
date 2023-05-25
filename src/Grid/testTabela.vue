@@ -34,9 +34,10 @@ const colunas = computed(()=>{
     const ne = Object.fromEntries(
       Object.entries(coluna)
         .map(([key, value]) => {
-          return [key, typeof value === 'object' ? value.value : value]
+          return [key, value]
+          // return [key, typeof value === 'object' ? value.value : value]
         })
-    ) as ColunaConfigs_
+    ) as ColunaConfigs_|Ref<ColunaConfigs_>
     return ne
   }
   )
@@ -99,7 +100,7 @@ provide("api_tabela_teste",{
 
 <template>
   <button @click="clear_cache" type="button" class="btn btn-outline-danger">clear cache</button>
-  <Tabela :colunas="colunas" :dados="dados" :nome_entidade="'tabela_teste'" />
+  <Tabela :colunas="(colunas as any)" :dados="dados" :nome_entidade="'tabela_teste'" />
   <div v-for="coluna in colunas_" class="d-flex  mb-1">
     <label v-for="key of Object.keys(coluna)" class="m-1">{{ key }}
       <input :type="input_type(typeof coluna[key as keyof typeof coluna])" v-model="coluna[key as keyof typeof coluna]">

@@ -6,8 +6,8 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/amplify-form-vue.umd.cjs",
-  "module": "./dist/amplify-form-vue.es.js",
+  "main": "./dist/amplify-form-vue.umd.ts",
+  "module": "./dist/amplify-form-vue.es.ts",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {

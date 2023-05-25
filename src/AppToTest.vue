@@ -20,6 +20,6 @@ watch(exibir, (exibir) => {
     </li>
   </ul>
 
-  <testTabela v-if="exibir === 'tabela'" />
+  <testTabela v-if="exibir === 'form'" />
   <testForm v-else />
 </template>

@@ -66,6 +66,7 @@
           ...opcoes_default,
           ...props.opcoes
         }
+        
         op.paginacaoOpcoes.pageSettings.pageSize = pageSize.value;
         op.paginacaoOpcoes.allowPaging = allowPaging.value;
         return props.opcoes
@@ -247,6 +248,7 @@
     </script>
     
     <template>
+      {{ colunas }}
       <!-- <h1 class="text-center my-4">{{ tela.nome }}</h1> -->
       <div class="row justify-content-center">
         {{ pageSize }}
