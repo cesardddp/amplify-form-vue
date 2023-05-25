@@ -53,8 +53,8 @@ const tab = reactive({
     }
 })
 const current_state_storage = shallowRef<FormStateHandler>()
-let json_result : ComputedRef
-function set_json_result(e:ComputedRef) {
+let json_result: ComputedRef
+function set_json_result(e: ComputedRef) {
     json_result = e
 }
 function set_current_state_storage(e: unknown) {
@@ -62,7 +62,7 @@ function set_current_state_storage(e: unknown) {
 }
 const current_state = computed(() => {
     let view_state: unknown = undefined;
-    console.log("printando "+ (convert_json.value?' json_result':'obj entries'));
+    console.log("printando " + (convert_json.value ? ' json_result' : 'obj entries'));
     if (current_state_storage.value)
         view_state = convert_json.value ?
             json_result :
@@ -79,6 +79,21 @@ const deep = ref(1)
 const pretify = ref(false)
 const form_types_to_show = ref(false)
 
+const vmodelteste = ref({
+    "nome": "teste",
+    "tipo": "ID",
+    "default": "teste",
+    "obrigatorio": true,
+    "items": [
+        "teste"
+    ],
+    "relacaoModel": {
+        "tipoRelacao": "hasOne",
+        "entidade_relacao": "teste",
+        "relationName": "teste"
+    }
+
+})
 </script>
 <template>
     <nav class="nav justify-content-center my-4">
@@ -101,7 +116,8 @@ const form_types_to_show = ref(false)
             <div class="col">
                 <AmplifyFormVue v-bind="{ introspectionSchema: schema as IntrospectionSchema, entity_name: testando.quem }"
                     @field_value_update="field_value_update" @form_result="set_current_state_storage"
-                    @json_result="set_json_result" @form_types="e => form_types_to_show = e" :key="testando.quem" />
+                    @json_result="set_json_result" @form_types="e => form_types_to_show = e" :key="testando.quem"
+                    v-model="vmodelteste" />
             </div>
             <div class="col-4">
                 <div class="sticky-top">

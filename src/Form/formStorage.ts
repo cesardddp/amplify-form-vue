@@ -1,4 +1,4 @@
-import { computed, markRaw, reactive, Ref, shallowRef, watch } from 'vue';
+import { computed, ComputedRef, markRaw, reactive, Ref, shallowRef, watch, WritableComputedRef } from 'vue';
 import objPath from "object-path";
 import _ from 'lodash';
 import { Cache } from 'aws-amplify';
@@ -7,12 +7,39 @@ import { FormFieldStyle } from './FormsElements/elementsTypes';
 
 export class FormStateHandler {
     public state_as_Map = reactive(new Map<string, Ref | Ref<unknown[]>>())
+    public inicializador_vmodelresult: (vModelValue: object) => void
 
-
+    public state_as_json: WritableComputedRef<object> | undefined
     constructor(
         public emit: Function,
     ) {
         this.emit = emit
+
+        // disponibiliza a function para inicializar vmodel 
+        this.inicializador_vmodelresult = (vModelValue: object) => {
+            const this_class = this;
+
+            const root = { root: { ...vModelValue } }
+            
+            // carrega valor do parent no state
+            const load_vmodel = () => {
+                for (let k of this.state_as_Map.keys()) {
+                    this.state_as_Map.get(k)!.value = objPath.get(root, k)
+                }
+            }
+            load_vmodel()
+            this.state_as_json = computed({
+                get() {
+                    load_vmodel()
+                    return root
+                },
+
+                set(data_object) {
+                    this_class.emit('update:modelValue', data_object.root)
+
+                }
+            })
+        }
     }
 
     addRef(introspection_caminho: string, multiple: boolean) {
@@ -36,6 +63,7 @@ export class FormStateHandler {
         return this.state_as_Map.get(introspection_caminho)!
 
     }
+
     get_final_json() {
         return computed(() => {
             const json = {};
@@ -46,6 +74,7 @@ export class FormStateHandler {
                     this.state_as_Map.get(k)?.value
                 )
             }
+            if (this.state_as_json) this.state_as_json.value = json
             return json
         })
     }
