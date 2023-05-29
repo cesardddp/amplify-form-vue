@@ -1,7 +1,7 @@
 <script lang="ts">
 import { IntrospectionSchema } from "../introspectionSchemaInterface";
-import { defineComponent, provide, type PropType, onMounted, watch, ref, watchEffect, computed, triggerRef } from "vue";
-import IntrospectionParser, { getEnityInputType } from "./parse-introspection";
+import { defineComponent, provide, type PropType, watchEffect } from "vue";
+import IntrospectionParser from "./parse-introspection";
 import { FormStateHandler, FormStylingHandler } from "./formStorage";
 import FormHandler from "./FormHandler.vue";
 import dot from 'dot-object';
@@ -24,7 +24,7 @@ export default defineComponent({
 
         const form_types = IntrospectionParser(
             props.entity_name,
-            props.introspectionSchema,
+            props.introspectionSchema
         )
 
         emit('form_types', Object.fromEntries(form_types.entries()))
@@ -43,23 +43,22 @@ export default defineComponent({
             form_state_handler.state_as_Map.get(k)!.value = nv;
         }
 
-        const state = computed(() => {
-            const dotObject = {
-                ...Object.fromEntries(form_state_handler.state_as_Map.entries()),
-            };
-            const json = dot.object(dotObject) as any;
+        watchEffect(() => {
+            const json = dot.object(
+                Object.fromEntries(
+                    form_state_handler.state_as_Map.entries()
+                )
+            ) as { root: object };
             emit('update:modelValue', json.root)
         })
 
         return {
             input_nome: form_types.keys().next().value,
-            state
         }
     }
 })
 </script>
 <template>
-    <div class="d-none">{{ state }}</div>
     <FormHandler :introspection_caminho="'root'" :form_name="input_nome" :field_name="input_nome"
         :is_multipleform_item="false" />
 </template>
