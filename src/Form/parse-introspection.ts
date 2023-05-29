@@ -296,7 +296,7 @@ export type FormSchemasMap = Map<
     FormSchema
 >;
 
-export default function (entity_name: string, introspectionSchema: IntrospectionSchema, form_state: FormStateHandler) {
+export default function (entity_name: string, introspectionSchema: IntrospectionSchema) {
 
     const forms_schemas_map: FormSchemasMap = new Map();
 

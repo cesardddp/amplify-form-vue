@@ -23,12 +23,12 @@ class Inner_forms_handler {
     for (let key of global_form_state_handler.state_as_Map.keys()) {
       if (key.startsWith(props.introspection_caminho)) {
 
-        const field = key.replace(props.introspection_caminho + ".", "");
+        const field = key.split(props.introspection_caminho+"[").pop()!.split("]").shift()!;
 
         const index = field.split(".").shift()!;
         if (index_encontrados.includes(index)) continue;
         index_encontrados.push(index);
-        _keys.push(`${props.introspection_caminho}.${index}`)
+        _keys.push(`${props.introspection_caminho}[${index}]`)
       }
     }
 
@@ -36,7 +36,7 @@ class Inner_forms_handler {
     // para novo form item, altera add_um pra true, isso força o recalculo do computed, computando com mais um item após o ultimo indexado no geranciador global
     if (this.add_um.value) {
       const last_indice = Number(index_encontrados.pop() ?? -1)
-      const key = `${props.introspection_caminho}.${last_indice + 1}`
+      const key = `${props.introspection_caminho}[${last_indice + 1}]`
       _keys.push(key)
       this.buttons_refs[key] = ref()
 

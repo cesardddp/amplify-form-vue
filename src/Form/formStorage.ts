@@ -1,4 +1,4 @@
-import { computed, ComputedRef, markRaw, reactive, Ref, shallowRef, watch, WritableComputedRef } from 'vue';
+import { computed, markRaw, reactive, Ref, shallowRef, watch, WritableComputedRef } from 'vue';
 import objPath from "object-path";
 import _ from 'lodash';
 import { Cache } from 'aws-amplify';
@@ -7,9 +7,12 @@ import { FormFieldStyle } from './FormsElements/elementsTypes';
 
 export class FormStateHandler {
     public state_as_Map = reactive(new Map<string, Ref | Ref<unknown[]>>())
+    // public get state_as_Map(){
+    //     return this._state_as_Map
+    // }
     public inicializador_vmodelresult: (vModelValue: object) => void
 
-    public state_as_json: WritableComputedRef<object> | undefined
+    public state_as_json: WritableComputedRef<object> | undefined;
     constructor(
         public emit: Function,
     ) {
@@ -17,28 +20,9 @@ export class FormStateHandler {
 
         // disponibiliza a function para inicializar vmodel 
         this.inicializador_vmodelresult = (vModelValue: object) => {
-            const this_class = this;
-
-            const root = { root: { ...vModelValue } }
-            
-            // carrega valor do parent no state
-            const load_vmodel = () => {
-                for (let k of this.state_as_Map.keys()) {
-                    this.state_as_Map.get(k)!.value = objPath.get(root, k)
-                }
+            for (let k of this.state_as_Map.keys()) {
+                this.state_as_Map.get(k)!.value = objPath.get({ root: { ...vModelValue } }, k)
             }
-            load_vmodel()
-            this.state_as_json = computed({
-                get() {
-                    load_vmodel()
-                    return root
-                },
-
-                set(data_object) {
-                    this_class.emit('update:modelValue', data_object.root)
-
-                }
-            })
         }
     }
 
@@ -50,13 +34,6 @@ export class FormStateHandler {
         watch(
             this.state_as_Map.get(introspection_caminho)!,
             () => {
-                this.emit(
-                    'field_value_update',
-                    {
-                        name: introspection_caminho,
-                        value: this.state_as_Map.get(introspection_caminho)
-                    }
-                )
             },
             { deep: multiple }
         );
@@ -64,27 +41,6 @@ export class FormStateHandler {
 
     }
 
-    get_final_json() {
-        return computed(() => {
-            const json = {};
-            for (let k of this.state_as_Map.keys()) {
-                objPath.set(
-                    json,
-                    k,
-                    this.state_as_Map.get(k)?.value
-                )
-            }
-            if (this.state_as_json) this.state_as_json.value = json
-            return json
-        })
-    }
-
-    tt_final_json() {
-        return _.throttle(
-            () => this.get_final_json(),
-            1000
-        )()
-    }
 }
 
 

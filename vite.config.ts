@@ -28,22 +28,26 @@ export default defineConfig({
       // make sure to externalize deps that shouldn't be bundled
       // into your library
       external: [
-        'vue',
-        '@aws-amplify/api',
-        'aws-amplify',
-        '@syncfusion/ej2-base',
-        '@syncfusion/ej2-data',
-        '@syncfusion/ej2-inputs',
-        '@syncfusion/ej2-vue-base',
-        '@syncfusion/ej2-vue-buttons',
-        '@syncfusion/ej2-vue-grids',
-        '@syncfusion/ej2-vue-inputs',
+        "@aws-amplify/api",
+        "@syncfusion/ej2-base",
+        "@syncfusion/ej2-data",
+        "@syncfusion/ej2-inputs",
+        "@syncfusion/ej2-vue-base",
+        "@syncfusion/ej2-vue-buttons",
+        "@syncfusion/ej2-vue-grids",
+        "@syncfusion/ej2-vue-inputs",
+        "@syncfusion/ej2-vue-navigations",
+        "aws-amplify",
         "bootstrap",
         "bootstrap-icons",
+        "cpf-cnpj-validator",
         "lodash",
         "lodash.debounce",
-        "@syncfusion/ej2-vue-grids",
-        "cpf-cnpj-validator"
+        "dot-object",
+        "sass",
+        "vue",
+        "vue-class-component",
+        "vue-json-pretty"
       ],
       output: {
         // Provide global variables to use in the UMD build
@@ -51,26 +55,31 @@ export default defineConfig({
 
         globals: {
           vue: 'Vue',
-          '@syncfusion/ej2-base': '@syncfusion/ej2-base',
-          '@syncfusion/ej2-data': '@syncfusion/ej2-data',
-          '@syncfusion/ej2-inputs': '@syncfusion/ej2-inputs',
-          '@syncfusion/ej2-vue-base': '@syncfusion/ej2-vue-base',
-          '@syncfusion/ej2-vue-buttons': '@syncfusion/ej2-vue-buttons',
-          '@syncfusion/ej2-vue-grids': '@syncfusion/ej2-vue-grids',
-          '@syncfusion/ej2-vue-inputs': '@syncfusion/ej2-vue-inputs',
+          "@aws-amplify/api": "@aws-amplify/api",
+          "@syncfusion/ej2-base": "@syncfusion/ej2-base",
+          "@syncfusion/ej2-data": "@syncfusion/ej2-data",
+          "@syncfusion/ej2-inputs": "@syncfusion/ej2-inputs",
+          "@syncfusion/ej2-vue-base": "@syncfusion/ej2-vue-base",
+          "@syncfusion/ej2-vue-buttons": "@syncfusion/ej2-vue-buttons",
+          "@syncfusion/ej2-vue-grids": "@syncfusion/ej2-vue-grids",
+          "@syncfusion/ej2-vue-inputs": "@syncfusion/ej2-vue-inputs",
+          "@syncfusion/ej2-vue-navigations": "@syncfusion/ej2-vue-navigations",
+          "aws-amplify": "aws-amplify",
           "bootstrap": "bootstrap",
           "bootstrap-icons": "bootstrap-icons",
+          "cpf-cnpj-validator": "cpf-cnpj-validator",
           "lodash": "lodash",
           "lodash.debounce": "lodash.debounce",
-          '@aws-amplify/api': '@aws-amplify/api',
-          'aws-amplify': 'aws-amplify',
-          "cpf-cnpj-validator": "cpf-cnpj-validator"
+          "dot-object": "dot-object",
+          "sass": "sass",
+          "vue-class-component": "vue-class-component",
+          "vue-json-pretty": "vue-json-pretty",
         }
       }
     },
     commonjsOptions: {
-      esmExternals: true 
-   },
+      esmExternals: true
+    },
   }
 }
 )

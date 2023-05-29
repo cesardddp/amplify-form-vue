@@ -96,6 +96,8 @@ const vmodelteste = ref({
 })
 </script>
 <template>
+    {{ vmodelteste }}
+    <input type="text" name="" v-model="vmodelteste.nome" id="">
     <nav class="nav justify-content-center my-4">
         <button @click="() => { testando.set('Campo') }" class="btn nav-link mx-1" aria-current="page">Campos</button>
         <button @click="() => { testando.set('Modulo') }" class="btn nav-link mx-1" aria-current="page">Modulo</button>
@@ -115,8 +117,7 @@ const vmodelteste = ref({
 
             <div class="col">
                 <AmplifyFormVue v-bind="{ introspectionSchema: schema as IntrospectionSchema, entity_name: testando.quem }"
-                    @field_value_update="field_value_update" @form_result="set_current_state_storage"
-                    @json_result="set_json_result" @form_types="e => form_types_to_show = e" :key="testando.quem"
+                     :key="testando.quem"
                     v-model="vmodelteste" />
             </div>
             <div class="col-4">

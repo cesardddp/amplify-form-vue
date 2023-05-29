@@ -27,7 +27,7 @@ const ultimo_item_component = computed(
                 label: `${length}: `,
                 // description: 'enter para add e shift+del para apagar',
                 description: '',
-                introspect_caminho: `${props.introspect_caminho}.${items.value.length - 1}`,
+                introspect_caminho: `${props.introspect_caminho}[${items.value.length - 1}]`,
                 focus_on_mount: true,
             }
         } satisfies ItemsProps['inner_component']
@@ -49,15 +49,16 @@ function add_item() {
             invalid.show = false
         }, 2000);
     } else {
-        const key = `${props.introspect_caminho}.${items.value.length}`
-        const _ref = ref()
-        global_form_state_handler.state_as_Map.set(key, _ref)
+        const key = `${props.introspect_caminho}[${items.value.length}]`
+        global_form_state_handler.addRef(key,false)
+        // const _ref = ref()
+        // global_form_state_handler.state_as_Map.set(key, _ref)
     }
 }
 function del_item(global_key?: number) {
-    global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}.${global_key ?? items.value.length - 1}`)
+    global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}[${global_key ?? items.value.length - 1}]`)
 }
-const invalid = reactive({
+const invalid = reactive({  
     msg: 'Erro!',
     show: false
 })
