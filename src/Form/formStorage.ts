@@ -20,7 +20,7 @@ export class FormStateHandler {
     addRef(introspection_caminho: string, multiple: boolean) {
         this.state_as_Map.set(
             introspection_caminho,
-            markRaw(multiple ? shallowRef([]) : shallowRef())
+            multiple ? shallowRef([]) : shallowRef()
         )
         // watch(
         //     this.state_as_Map.get(introspection_caminho)!,

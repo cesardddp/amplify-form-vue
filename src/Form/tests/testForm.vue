@@ -79,25 +79,29 @@ const deep = ref(1)
 const pretify = ref(false)
 const form_types_to_show = ref(false)
 
-const vmodelteste = ref({
-    "nome": "teste",
-    "tipo": "ID",
-    "default": "teste",
-    "obrigatorio": true,
-    "items": [
-        "teste"
-    ],
-    "relacaoModel": {
-        "tipoRelacao": "hasOne",
-        "entidade_relacao": "teste",
-        "relationName": "teste"
-    }
 
-})
+// const vmodelteste = ref({
+    // "nome": "teste",
+    // "tipo": "ID",
+    // "default": "teste",
+    // "obrigatorio": true,
+    // "items": [
+        // "teste"
+    // ],
+    // "relacaoModel": {
+        // "tipoRelacao": "hasOne",
+        // "entidade_relacao": "teste",
+        // "relationName": "teste"
+    // }
+
+// })
+const vmodelteste = ref()
 </script>
 <template>
-    {{ vmodelteste }}
-    <input type="text" name="" v-model="vmodelteste.nome" id="">
+    <pre>
+        {{ vmodelteste }}
+    </pre>
+    <!-- <input type="text" name="" v-model="vmodelteste.nome" id=""> -->
     <nav class="nav justify-content-center my-4">
         <button @click="() => { testando.set('Campo') }" class="btn nav-link mx-1" aria-current="page">Campos</button>
         <button @click="() => { testando.set('Modulo') }" class="btn nav-link mx-1" aria-current="page">Modulo</button>

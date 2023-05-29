@@ -10,7 +10,7 @@ export default defineComponent({
     props: {
         introspectionSchema: { type: Object as PropType<IntrospectionSchema>, required: true },
         entity_name: { type: String, required: true },
-        modelValue: { type: Object, required: true }
+        modelValue: { type: Object, default: () => ({})}
     },
     emits: ['form_types', 'update:modelValue'],
     components: {
@@ -34,7 +34,7 @@ export default defineComponent({
         provide("form_styling_handler", new FormStylingHandler())
 
 
-        const root = { root: props.modelValue }
+        const root = { root: {...props.modelValue} }
         const modelValueKeys = dot.dot(root);
         for (let k of Object.keys(modelValueKeys)) {
             const nv = modelValueKeys[k]
@@ -44,9 +44,10 @@ export default defineComponent({
         }
 
         watchEffect(() => {
+            const entries = [...form_state_handler.state_as_Map.keys()].map(k => [k, form_state_handler.state_as_Map.get(k)?.value])
             const json = dot.object(
                 Object.fromEntries(
-                    form_state_handler.state_as_Map.entries()
+                    entries
                 )
             ) as { root: object };
             emit('update:modelValue', json.root)
