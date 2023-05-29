@@ -12,7 +12,6 @@ export default defineComponent({
         entity_name: { type: String, required: true },
         modelValue: { type: Object, required: true }
     },
-    // emits: ['form_result', 'field_value_update', 'form_types', 'json_result', 'update:modelValue'],
     emits: ['form_types', 'update:modelValue'],
     components: {
         FormHandler
@@ -34,20 +33,13 @@ export default defineComponent({
         provide("form_types", form_types)
         provide("form_styling_handler", new FormStylingHandler())
 
-        // inicializa v-model somente após o form_state_handler estar pronto, sou seja, após cada campo ter sido inicializado,
-        // o que é necessário pq os campos que inicializam o form_state_handler
-        // e o vmodel modifical o form_state_handler
-
-        const keys = computed(() => [...form_state_handler.state_as_Map.keys()])
 
         const root = { root: props.modelValue }
         const modelValueKeys = dot.dot(root);
         for (let k of Object.keys(modelValueKeys)) {
             const nv = modelValueKeys[k]
-            const v = form_state_handler.state_as_Map.get(k) ?? form_state_handler.addRef(k, Array.isArray(nv));
-            if (v === undefined) {
+            if (!form_state_handler.state_as_Map.has(k))
                 form_state_handler.addRef(k, Array.isArray(nv));
-            }
             form_state_handler.state_as_Map.get(k)!.value = nv;
         }
 
@@ -55,24 +47,19 @@ export default defineComponent({
             const dotObject = {
                 ...Object.fromEntries(form_state_handler.state_as_Map.entries()),
             };
-            const json = dot.object(dotObject);
+            const json = dot.object(dotObject) as any;
             emit('update:modelValue', json.root)
         })
 
-        watch(state, () => {
-            const dotObject = {
-                ...Object.fromEntries(form_state_handler.state_as_Map.entries())
-            };
-            const json = dot.object(dotObject);
-            emit('update:modelValue', json.root)
-        })
         return {
-            input_nome: form_types.keys().next().value, keys
+            input_nome: form_types.keys().next().value,
+            state
         }
     }
 })
 </script>
 <template>
+    <div class="d-none">{{ state }}</div>
     <FormHandler :introspection_caminho="'root'" :form_name="input_nome" :field_name="input_nome"
         :is_multipleform_item="false" />
 </template>

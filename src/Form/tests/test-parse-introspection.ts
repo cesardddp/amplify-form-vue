@@ -79,8 +79,7 @@ const test_parse_schema = (entitys_list: string[], _schema: IntrospectionSchema)
         )
         const mapped = IntrospectionParser(
             entity_name,
-            _schema as IntrospectionSchema,
-            store_form
+            _schema as IntrospectionSchema
         )
         console.log(Object.fromEntries(mapped.entries()));
 

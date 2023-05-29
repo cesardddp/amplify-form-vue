@@ -69,7 +69,7 @@
         
         op.paginacaoOpcoes.pageSettings.pageSize = pageSize.value;
         op.paginacaoOpcoes.allowPaging = allowPaging.value;
-        return props.opcoes
+        return op
       }
     )
     const colunas = computed(() => props.colunas.map(

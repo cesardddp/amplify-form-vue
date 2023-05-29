@@ -1,5 +1,4 @@
 import { computed, markRaw, reactive, Ref, shallowRef, watch, WritableComputedRef } from 'vue';
-import objPath from "object-path";
 import _ from 'lodash';
 import { Cache } from 'aws-amplify';
 import { FormFieldStyle } from './FormsElements/elementsTypes';
@@ -10,20 +9,12 @@ export class FormStateHandler {
     // public get state_as_Map(){
     //     return this._state_as_Map
     // }
-    public inicializador_vmodelresult: (vModelValue: object) => void
 
     public state_as_json: WritableComputedRef<object> | undefined;
     constructor(
         public emit: Function,
     ) {
         this.emit = emit
-
-        // disponibiliza a function para inicializar vmodel 
-        this.inicializador_vmodelresult = (vModelValue: object) => {
-            for (let k of this.state_as_Map.keys()) {
-                this.state_as_Map.get(k)!.value = objPath.get({ root: { ...vModelValue } }, k)
-            }
-        }
     }
 
     addRef(introspection_caminho: string, multiple: boolean) {
@@ -31,12 +22,10 @@ export class FormStateHandler {
             introspection_caminho,
             markRaw(multiple ? shallowRef([]) : shallowRef())
         )
-        watch(
-            this.state_as_Map.get(introspection_caminho)!,
-            () => {
-            },
-            { deep: multiple }
-        );
+        // watch(
+        //     this.state_as_Map.get(introspection_caminho)!,
+        //     () => {}, { deep: multiple }
+        // );
         return this.state_as_Map.get(introspection_caminho)!
 
     }
