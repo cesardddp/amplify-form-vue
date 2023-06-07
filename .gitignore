@@ -57,3 +57,4 @@ src/file_tests/old_schema.json
 src/file_tests/queries.ts
 src/file_tests/schema_24_02_com_modulos_e_grupos.json
 src/file_tests/simple-schema.json
+src/file_tests/schema_06_06.json

@@ -14,7 +14,7 @@ const global_form_state_handler = (inject('form_state_handler') as FormStateHand
 
 const items = computed(() => {
     return [...global_form_state_handler.state_as_Map.keys()]
-        .filter(key => key.startsWith(props.introspect_caminho!))
+        .filter(key => (key.startsWith(props.introspect_caminho!))&&key.split(props.introspect_caminho!)[1].startsWith('['))
         .map(key => global_form_state_handler.state_as_Map.get(key)!)
 })
 const ultimo_item_component = computed(

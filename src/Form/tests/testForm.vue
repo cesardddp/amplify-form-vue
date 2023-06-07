@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AmplifyFormVue from "../AmplifyForm.vue"
-import schema from "../../file_tests/schema_24_02_com_modulos_e_grupos.json";
+import schema from "../../file_tests/schema_06_06.json";
 import Input from "../FormsElements/Input.vue";
 import { computed, ComputedRef, reactive, Ref, ref, shallowRef, watch, watchEffect } from "vue";
 import test_suite from "./test-parse-introspection";
@@ -54,12 +54,6 @@ const tab = reactive({
 })
 const current_state_storage = shallowRef<FormStateHandler>()
 let json_result: ComputedRef
-function set_json_result(e: ComputedRef) {
-    json_result = e
-}
-function set_current_state_storage(e: unknown) {
-    current_state_storage.value = e as FormStateHandler
-}
 const current_state = computed(() => {
     let view_state: unknown = undefined;
     console.log("printando " + (convert_json.value ? ' json_result' : 'obj entries'));
