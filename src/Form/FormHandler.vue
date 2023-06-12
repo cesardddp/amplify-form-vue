@@ -23,7 +23,7 @@ class Inner_forms_handler {
     for (let key of global_form_state_handler.state_as_Map.keys()) {
       if (key.startsWith(props.introspection_caminho)) {
 
-        const field = key.split(props.introspection_caminho+"[").pop()!.split("]").shift()!;
+        const field = key.split(props.introspection_caminho + "[").pop()!.split("]").shift()!;
 
         const index = field.split(".").shift()!;
         if (index_encontrados.includes(index)) continue;
@@ -32,7 +32,7 @@ class Inner_forms_handler {
       }
     }
 
-    
+
     // para novo form item, altera add_um pra true, isso força o recalculo do computed, computando com mais um item após o ultimo indexado no geranciador global
     if (this.add_um.value) {
       const last_indice = Number(index_encontrados.pop() ?? -1)
@@ -42,10 +42,10 @@ class Inner_forms_handler {
 
       // retorna add_um pra false pra não adicionar novamente no proximo computed
       this.add_um.value = false
-      
+
 
       setTimeout(() => {
-        
+
         this.buttons_refs[key].value[0].click()
       }, 100)
     }
@@ -82,7 +82,21 @@ class Inner_forms_handler {
 
   remove_item(introspect_caminho: string) {
     [...global_form_state_handler.state_as_Map.keys()]
-      .filter(key => key.startsWith(introspect_caminho))
+      .filter(key => {
+
+        const t = key.startsWith(introspect_caminho);
+        if (t) {
+          console.log(introspect_caminho);
+
+          console.log(key);
+          console.log(
+            global_form_state_handler.state_as_Map.get(key)?.value
+          );
+
+          // debugger
+        }
+        return t
+      })
       .map(key => global_form_state_handler.state_as_Map.delete(key))
 
     delete this.buttons_refs[introspect_caminho];
@@ -121,11 +135,11 @@ function get_form_field_content(introspect_caminho: string) {
 </script>
 <template>
   <Form v-if="!input.multiple" v-bind="{
-      form_name,
-      form_type: input,
-      introspection_caminho,
-      is_multipleform_item,
-    }" />
+    form_name,
+    form_type: input,
+    introspection_caminho,
+    is_multipleform_item,
+  }" />
   <article v-else>
 
 
@@ -133,6 +147,7 @@ function get_form_field_content(introspect_caminho: string) {
     <ul class="nav nav-tabs" role="tablist">
       <li v-for="form, index in inner_forms_handler.form_components_props.value" class="nav-item position-relative"
         role="presentation" :key="form.introspection_caminho">
+        <!-- {{ form.introspection_caminho }} -->
         <button @click="() => inner_forms_handler.remove_item(form.introspection_caminho)" type="button" role="button"
           class="z-3 position-absolute top-0 start-0 translate-middle badge border border-light rounded-circle bg-danger ">
           x

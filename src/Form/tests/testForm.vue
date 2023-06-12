@@ -74,27 +74,131 @@ const pretify = ref(false)
 const form_types_to_show = ref(false)
 
 
-// const vmodelteste = ref({
-    // "nome": "teste",
-    // "tipo": "ID",
-    // "default": "teste",
-    // "obrigatorio": true,
-    // "items": [
-        // "teste"
-    // ],
-    // "relacaoModel": {
-        // "tipoRelacao": "hasOne",
-        // "entidade_relacao": "teste",
-        // "relationName": "teste"
-    // }
-
-// })
-const vmodelteste = ref()
+const vmodelteste = ref(
+  {
+  "nav_bar": {
+    "nav_bar_opcoes": {
+      "drop_down_menu": [
+        {
+          "nome": "Perfil",
+          "href": "/perfil"
+        }
+      ]
+    },
+    "brand": {
+      "is_home": true,
+      "imagem_logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmpZjaylmkLE-zx8i-woTHEO0nEsJU7MloIasVsOkcUQ&s"
+    },
+    "modulos": [
+      {
+        "grupos_auth": [
+          "MeuCPD",
+          "Usuarios"
+        ],
+        "modulo": "App",
+        "telas": [
+          {
+            "nome": "Criar App",
+            "auth": [
+              "MeuCPD",
+              "Usuarios"
+            ],
+            "tela": "createApp"
+          },
+          {
+            "nome": "Atualizar App",
+            "auth": [
+              "MeuCPD",
+              "Usuarios"
+            ],
+            "tela": "updateApp"
+          },
+          {
+            "nome": "Listar Apps",
+            "auth": [
+              "MeuCPD",
+              "Usuarios"
+            ],
+            "tela": "listAppsCards"
+          }
+        ]
+      },
+      {
+        "grupos_auth": [
+          "MeuCPD",
+          "Usuarios"
+        ],
+        "modulo": "Model",
+        "telas": [
+          {
+            "nome": "Criar Model",
+            "auth": [
+              "MeuCPD",
+              "Usuarios"
+            ],
+            "tela": "createModel"
+          },
+          {
+            "nome": "Atualizar Model",
+            "auth": [
+              "MeuCPD",
+              "Usuarios"
+            ],
+            "tela": "updateModel"
+          },
+          {
+            "nome": "Listar Models",
+            "auth": [
+              "MeuCPD",
+              "Usuarios"
+            ],
+            "tela": "listModelsCards"
+          }
+        ]
+      }
+    ]
+  },
+  "grupos": [
+    "MeuCPD",
+    "Usuarios"
+  ],
+  "meta": {
+    "BackendEnvironmentName": "producao",
+    "BackendEnvironmentNameApp": "mermadminapp",
+    "app_name": "mermadmin"
+  },
+  "login": {
+    "form_login": {
+      "logos": [
+        {
+          "imagem": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmpZjaylmkLE-zx8i-woTHEO0nEsJU7MloIasVsOkcUQ&s",
+          "legenda": "MeuCPD Soluções Tecnólogicas"
+        },
+        {
+          "imagem": "favicon.png",
+          "legenda": "MERM Melhor ERP do Mundo!"
+        }
+      ],
+      "cor_primaria": "#4d4e9b",
+      "cor_secundaria": "#6b6ccf",
+      "background_color_theme": "bg_dark",
+      "footer": {
+        "sing_up_mensagem": "Não tem uma conta?",
+        "link": "meucpd.com.br"
+      },
+      "cor_terciaria": "#333464"
+    }
+  },
+  "ambiente": "dev",
+  "id": "46c2b3be-5a77-4086-8049-946ba107e036",
+  "nome": "mermadmin"
+}
+)
 </script>
 <template>
-    <pre>
-        {{ vmodelteste }}
-    </pre>
+<pre>
+{{ vmodelteste.nav_bar.modulos }}
+</pre>
     <!-- <input type="text" name="" v-model="vmodelteste.nome" id=""> -->
     <nav class="nav justify-content-center my-4">
         <button @click="() => { testando.set('Campo') }" class="btn nav-link mx-1" aria-current="page">Campos</button>
