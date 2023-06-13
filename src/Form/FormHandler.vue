@@ -137,7 +137,7 @@ function get_form_field_content(index: number) {
         :key="form.props.introspection_caminho">
 
         <!-- {{ form }} -->
-        <Form v-bind="form" />
+        <Form v-bind="form.props" />
       </div>
     </div>
   </article>
