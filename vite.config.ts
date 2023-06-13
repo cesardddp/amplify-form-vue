@@ -41,13 +41,14 @@ export default defineConfig({
         "bootstrap",
         "bootstrap-icons",
         "cpf-cnpj-validator",
+        "dot-object",
         "lodash",
         "lodash.debounce",
-        "dot-object",
         "sass",
         "vue",
         "vue-class-component",
-        "vue-json-pretty"
+        "vue-json-pretty",
+        "maska"
       ],
       output: {
         // Provide global variables to use in the UMD build
@@ -68,12 +69,13 @@ export default defineConfig({
           "bootstrap": "bootstrap",
           "bootstrap-icons": "bootstrap-icons",
           "cpf-cnpj-validator": "cpf-cnpj-validator",
+          "dot-object": "dot-object",
           "lodash": "lodash",
           "lodash.debounce": "lodash.debounce",
-          "dot-object": "dot-object",
           "sass": "sass",
           "vue-class-component": "vue-class-component",
           "vue-json-pretty": "vue-json-pretty",
+          "maska":"maska"
         }
       }
     },

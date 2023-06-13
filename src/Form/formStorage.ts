@@ -71,6 +71,7 @@ export class FormStylingHandler {
                 bs_class_input: "",
                 esconder: false,
                 nao_usar: false,
+                mask:""
             } satisfies FormFieldStyle;
             this.style_state_as_Map.set(
                 key,
@@ -173,6 +174,19 @@ export class FormStylingHandler {
                     )
                 }
             }),
+            mask:computed({
+                get: () => this.style_state_as_Map.get(key)!.value.mask,
+                set: (value) => {
+                    this.style_state_as_Map.get(key)!.value = {
+                        ...this.style_state_as_Map.get(key)!.value,
+                        mask: value
+                    }
+                    Cache.setItem(
+                        key,
+                        this.style_state_as_Map.get(key)!.value
+                    )
+                }
+            })
 
         }
     }

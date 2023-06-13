@@ -1,6 +1,6 @@
 <script setup lang="ts" >
-import { computed, inject, reactive, ref } from "vue";
-import { FormProps } from "./formTypes";
+import { computed, inject, reactive, ref, watch } from "vue";
+import { FormProps, Validacao } from "./formTypes";
 import FormHandler from "./FormHandler.vue";
 import FormFieldEditor from "./FormsElements/controlador.vue";
 import { FormStylingHandler } from "./formStorage";
@@ -36,8 +36,26 @@ const form_fields = computed(() => input.form_fields.filter(
         ).nao_usar.value ?? false)
     }
 ))
+const validacao = inject<Validacao>("validacao")!
+const formElement = ref<HTMLFormElement>()
+watch(()=>validacao.trigger_validacao, () => {
+    if (validacao.trigger_validacao) {
+        const v = formElement.value!.reportValidity()
+        
+        validacao.validado = validacao.validado && v
+        // formElement.value.
+        if (!v) {
+            // alert(props.introspection_caminho)
+            validacao.validacoes.push({
+                elemento: props.introspection_caminho,
+                erros: ["?"]
+            })
+        }
+    }
+})
 </script>
 <template>
+    <!-- {{ validacao }} -->
     <div class="btn-group dropstart">
         <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             ...
@@ -50,7 +68,7 @@ const form_fields = computed(() => input.form_fields.filter(
         X Fechar edição
     </button>
     <!-- ITEM FIELDS -->
-    <div role="form" :class="set_opacity ? 'opacity-50' : ''">
+    <form ref="formElement" role="form" :class="{'opacity-50':set_opacity,'was-validated':validacao.trigger_validacao}">
         <div @click="set_opacity = false" class="my-1" v-for="form_field in form_fields">
             <FormFieldEditor v-if="edit_mode" :introspect_caminho="`${introspection_caminho}.${form_field.nome}`">
                 <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"
@@ -63,7 +81,7 @@ const form_fields = computed(() => input.form_fields.filter(
                 </component>
             </div>
         </div>
-    </div>
+    </form>
 
     <!-- SUBFORM NAVBAR -->
     <div v-if="sub_forms.nav_forms.length" @click="set_opacity = true">

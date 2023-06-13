@@ -1,10 +1,9 @@
 <script setup lang="ts" >
-import { computed, inject, reactive, Ref, ref, shallowRef, toRef, watch, watchEffect } from "vue";
+import { computed, inject, Ref, watchEffect } from "vue";
 import Form from "./Form.vue";
 import { FormSchemasMap, FormSchema } from "./parse-introspection";
 import { FormStateHandler as GlobalFormStateHandler } from "./formStorage";
 import { FormHandlerProps, FormProps } from "./formTypes";
-
 
 const props = defineProps<FormHandlerProps>()
 const emits = defineEmits(['qtos_forms'])
@@ -19,17 +18,20 @@ class Inner_forms_handler {
   public forms_datas = global_form_state_handler.getField(props.introspection_caminho)
 
   constructor() {
-    if (this.forms_datas.value === undefined) {
-      this.forms_datas.value = []
+    if (!this.forms_datas.value) {
+      this.forms_datas.value = [null]
     }
   }
 
-  form_components_props = //global_form_state_handler.getField(props.introspection_caminho)
+  form_components = //global_form_state_handler.getField(props.introspection_caminho)
     computed(() => (this.forms_datas.value as Ref[])
       .map(
-        (data, index) => this.copia_e_preenche_form_props_com_introspec_caminho(
-          `${props.introspection_caminho}[${index}]`
-        ))
+        (data, index) => ({
+          props: this.copia_e_preenche_form_props_com_introspec_caminho(
+            `${props.introspection_caminho}[${index}]`
+          )
+        })
+      )
     )
   novo_item_form() {
     this.forms_datas.value.push(null)
@@ -68,7 +70,7 @@ let inner_forms_handler: Inner_forms_handler
 
 if (input.multiple) {
   inner_forms_handler = new Inner_forms_handler();
-  if (!inner_forms_handler.form_components_props.value.length)
+  if (!inner_forms_handler.form_components.value.length)
     inner_forms_handler.novo_item_form();
 
   watchEffect(() => {
@@ -76,7 +78,7 @@ if (input.multiple) {
       'qtos_forms',
       {
         quem: props.field_name,
-        qtos: inner_forms_handler.form_components_props.value.length
+        qtos: inner_forms_handler.form_components.value.length
       }
     )
   })
@@ -87,9 +89,10 @@ function get_form_field_content(index: number) {
 
   if (!ppp || ppp.length <= 0) return
 
-  const first = Object.values(ppp).filter(f=>typeof f != 'object')[0];
+  const first = Object.values(ppp).filter(f => typeof f != 'object')[0];
   return first ? first : '(editando)'
 }
+
 </script>
 <template>
   <Form v-if="!input.multiple" v-bind="{
@@ -103,17 +106,18 @@ function get_form_field_content(index: number) {
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
-      <li v-for="form, index in inner_forms_handler.form_components_props.value" class="nav-item position-relative"
-        role="presentation" :key="form.introspection_caminho">
+      <li v-for="form, index in inner_forms_handler.form_components.value" class="nav-item position-relative"
+        role="presentation" :key="form.props.introspection_caminho">
         <!-- {{ form.introspection_caminho }} -->
-        <button @click="() => inner_forms_handler.remove_item(form.introspection_caminho)" type="button" role="button"
+        <button @click="() => inner_forms_handler.remove_item(form.props.introspection_caminho)" type="button"
+          role="button"
           class="z-3 position-absolute top-0 start-0 translate-middle badge border border-light rounded-circle bg-danger ">
           x
         </button>
-        <button class="nav-link" :id="`${form.introspection_caminho}-tab`" data-bs-toggle="tab"
-          :data-bs-target="`#${form?.introspection_caminho}`" type="button" role="tab"
-          :aria-controls="`${form?.introspection_caminho}`" aria-selected="false" :class="index === 0 ? 'active' : ''"
-          :ref="inner_forms_handler.buttons_refs[form.introspection_caminho]">
+        <button class="nav-link" :id="`${form.props.introspection_caminho}-tab`" data-bs-toggle="tab"
+          :data-bs-target="`#${form.props?.introspection_caminho}`" type="button" role="tab"
+          :aria-controls="`${form.props?.introspection_caminho}`" aria-selected="false"
+          :class="index === 0 ? 'active' : ''" :ref="inner_forms_handler.buttons_refs[form.props.introspection_caminho]">
           {{ index + 1 }}: {{ get_form_field_content(index) ?? '(editando)' }}
         </button>
 
@@ -127,9 +131,10 @@ function get_form_field_content(index: number) {
 
     <!-- Tab panes -->
     <div class="tab-content">
-      <div v-for="form, index in inner_forms_handler.form_components_props.value  " class="tab-pane"
-        :id="`${form.introspection_caminho}`" role="tabpanel" :aria-labelledby="`${form?.introspection_caminho}-tab`"
-        :class="index === 0 ? 'active' : ''" :key="form.introspection_caminho">
+      <div v-for="form, index in inner_forms_handler.form_components.value  " class="tab-pane"
+        :id="`${form.props.introspection_caminho}`" role="tabpanel"
+        :aria-labelledby="`${form.props?.introspection_caminho}-tab`" :class="index === 0 ? 'active' : ''"
+        :key="form.props.introspection_caminho">
 
         <!-- {{ form }} -->
         <Form v-bind="form" />

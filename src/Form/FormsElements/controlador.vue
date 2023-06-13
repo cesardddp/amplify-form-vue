@@ -246,6 +246,10 @@ const ocultar = computed({
                 <label for="nao_usar" class="form-label">Não Usar</label>
             <input type="checkbox" v-model="formStylingHandler.nao_usar.value" name="nao_usar">
         </div>
+        <div class="col">
+                <label for="mask" class="form-label">Máscara</label>
+            <input type="text" v-model="formStylingHandler.mask.value" name="mask">
+        </div>
 
     </div>
     <label class="text-primary" > classe atual

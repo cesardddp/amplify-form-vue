@@ -18,6 +18,7 @@ import {
 TabItemDirective,
 TabItemsDirective,
 } from "@syncfusion/ej2-vue-navigations";
+import { vMaska } from "maska"
 
 import App from './AppToTest.vue'
 
@@ -32,4 +33,5 @@ createApp(App)
     .component(TabPlugin.name,TabComponent)
     .component(TabItemPlugin.name,TabItemDirective)
     .component(TabItemsPlugin.name,TabItemsDirective)
+    .directive("maska", vMaska)
     .mount('#app')

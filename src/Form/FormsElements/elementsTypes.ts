@@ -10,6 +10,7 @@ export type FormFieldStyle = {
     bs_class_input: string,
     esconder: boolean,
     nao_usar: boolean,
+    mask?:string
 }
 
 type BaseComponent = {
@@ -21,6 +22,7 @@ type BaseComponent = {
     introspect_caminho?: string;
     validacoes?: OpcoesValidacoes[];
     focus_on_mount?:boolean;
+    validou?:boolean
 }
 
 type InnerComponent = {

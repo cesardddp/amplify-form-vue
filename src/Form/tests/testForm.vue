@@ -175,11 +175,15 @@ const vmodelteste = ref(testando.quem !== 'App' ? {} :
     "nome": "mermadmin"
   }
 )
+const validar = ref(false);
+function submit() {
+  validar.value = true
+}
+function validou(v: boolean) {
+  // alert(v)
+}
 </script>
 <template>
-  <pre>
-{{ vmodelteste }}
-</pre>
   <!-- <input type="text" name="" v-model="vmodelteste.nome" id=""> -->
   <nav class="nav justify-content-center my-4">
     <button @click="() => { testando.set('Campo') }" class="btn nav-link mx-1" aria-current="page">Campos</button>
@@ -199,8 +203,11 @@ const vmodelteste = ref(testando.quem !== 'App' ? {} :
     <div class="row" v-if="testando.quem !== 'Suite Test'">
 
       <div class="col">
-        <AmplifyFormVue v-bind="{ introspectionSchema: schema as IntrospectionSchema, entity_name: testando.quem }"
-          :key="testando.quem" v-model="vmodelteste" />
+        <AmplifyFormVue
+          v-bind="{ introspectionSchema: schema as IntrospectionSchema, entity_name: testando.quem, validar }"
+          :key="testando.quem" v-model="vmodelteste" @validado="validou" />
+        <button type="button" @click="submit" class="btn btn-primary">submit</button>
+        {{ validar }}
       </div>
       <div class="col-4">
         <div class="sticky-top">
@@ -227,9 +234,12 @@ const vmodelteste = ref(testando.quem !== 'App' ? {} :
                   </label>
                 </div>
               </div>
-              /////////{{ json_result }} /////////
-              <pre v-if="!pretify"></pre>
-              <!-- <vue-json-pretty v-else :data="" :deep="5" :key="5" :editable="false" :showSelectController="true" /> -->
+
+              <pre v-if="!pretify">
+{{ vmodelteste }}
+              </pre>
+              <vue-json-pretty v-else :data="vmodelteste" :deep="5" :key="5" :editable="false"
+                :showSelectController="true" />
             </div>
             <div class="tab-pane" id="form" role="tabpanel" aria-labelledby="form-tab">
               <pre v-if="!pretify">{{ form_types_to_show }}</pre>

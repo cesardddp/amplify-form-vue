@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Input } from "@syncfusion/ej2-inputs";
-import { onMounted, ref, computed, inject, onUnmounted } from "vue";
+import { onMounted, ref, computed, inject, onUnmounted, ComputedRef } from "vue";
 import { FormStateHandler, FormStylingHandler } from "../formStorage";
 import type { InputProps, Validacoes } from "./elementsTypes";
 import { Tooltip } from "bootstrap";
@@ -21,7 +21,7 @@ const value = global_form_state_handler.getField(props.introspect_caminho!)
 
 const validacao = computed(() => {
     let valid_feedback_msg: string[] = [];
-    let invalid_feedback_msg: string[] = [];
+    let invalid_feedback: { show: ComputedRef, msg: string }[] = [];
     let validou = false;
     let validacoes: Validacoes = {
         required: false,
@@ -29,9 +29,10 @@ const validacao = computed(() => {
         maxlength: undefined,
     }
     props.validacoes?.forEach(v => {
+        // debugger
         switch (v) {
             case 'required':
-                invalid_feedback_msg.push('Por favor, preencha esse campo!')
+                invalid_feedback.push({ msg: 'Por favor, preencha esse campo!', show: computed(() => !value.value) })
                 validacoes.required = true
                 break;
             case v.match(/minlength:[0-9]*/)?.input:
@@ -53,7 +54,7 @@ const validacao = computed(() => {
 
     return {
         valid_feedback_msg,
-        invalid_feedback_msg,
+        invalid_feedback,
         validacoes
     }
 })
@@ -107,6 +108,7 @@ const bs_class_input = computed(
         return base_input + ' ' + bs_classes.bs_class_input.value
     }
 )
+// const mask = computed(()=>bs_classes.mask)
 const safeFieldSize = ref('md');//fieldSizeMap.get(fieldSize) ? fieldSize : 'md';        
 // return {
 //     value,
@@ -144,20 +146,25 @@ onMounted(() => {
 });
 </script>
 <template>
+    <!-- <input type="text" name="" id="" required> -->
     <div v-if="bootstrap_syncfusion === 'bs'">
 
         <div :class="bs_class_wrap">
-
+            <!-- {{ bs_classes.mask }} -->
             <input :class="bs_class_input" v-model="value" :type='type' :id="introspect_caminho" :name="introspect_caminho"
                 :placeholder="placeholder ?? 'Insira ' + nome" :step="step" :disabled="disabled"
                 :required="validacao.validacoes.required" :minlength="validacao.validacoes.minlength"
-                :maxlength="validacao.validacoes.maxlength" data-bs-toggle="tooltip" :title="description" ref="this_input">
+                :maxlength="validacao.validacoes.maxlength" data-bs-toggle="tooltip" :title="description" ref="this_input"
+                v-maska :data-maska="bs_classes.mask.value">
 
             <label data-bs-toggle="popover" data-bs-trigger="hover" :class="bs_class_label" :for="introspect_caminho">{{
                 label }}</label>
             <div class="valid-feedback"></div>
             <div class="invalid-feedback">
-                <p v-for="m in validacao.invalid_feedback_msg">{{ m }}</p>
+                <p v-for="m in validacao.invalid_feedback">
+                    <span v-if="m.show">{{ m.msg }}</span>
+
+                </p>
             </div>
         </div>
     </div>
