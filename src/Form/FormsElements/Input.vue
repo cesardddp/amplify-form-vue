@@ -17,17 +17,8 @@ if (!props.introspect_caminho)
     throw new Error(`Não foi passado introspect_caminho em ${props.nome}: ${props.introspect_caminho} `);
 
 const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
-const _ref = global_form_state_handler.state_as_Map.get(props.introspect_caminho) ??
-    global_form_state_handler.addRef(props.introspect_caminho, false)
+const value = global_form_state_handler.getField(props.introspect_caminho!)
 
-const value = computed({
-    get() {
-        return _ref.value
-    },
-    set(value) {
-        _ref.value = value
-    }
-})
 const validacao = computed(() => {
     let valid_feedback_msg: string[] = [];
     let invalid_feedback_msg: string[] = [];

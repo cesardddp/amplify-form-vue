@@ -70,28 +70,28 @@ const oldEntitysToTest = [
     'View',
     'Modulo',
 ]
-const test_parse_schema = (entitys_list: string[], _schema: IntrospectionSchema) => {
-    const result = entitys_list.map(entity_name => {
-        const store_form = new FormStateHandler(
-            (...params: any[]) => {
-                console.log(...params);
-            }
-        )
-        const mapped = IntrospectionParser(
-            entity_name,
-            _schema as IntrospectionSchema
-        )
-        console.log(Object.fromEntries(mapped.entries()));
+// const test_parse_schema = (entitys_list: string[], _schema: IntrospectionSchema) => {
+//     const result = entitys_list.map(entity_name => {
+//         const store_form = new FormStateHandler(
+//             (...params: any[]) => {
+//                 console.log(...params);
+//             }
+//         )
+//         const mapped = IntrospectionParser(
+//             entity_name,
+//             _schema as IntrospectionSchema
+//         )
+//         console.log(Object.fromEntries(mapped.entries()));
 
-        // debugger;
-        return mapped
-    })
-    const mapped_json = result.map(
-        m => Object.fromEntries(m.entries())
-    )
+//         // debugger;
+//         return mapped
+//     })
+//     const mapped_json = result.map(
+//         m => Object.fromEntries(m.entries())
+//     )
 
-    return mapped_json;
-}
+//     return mapped_json;
+// }
 
 const entitysToTest = [
     "CreateModuloInput",
@@ -109,7 +109,7 @@ function testeGetTypesFromSchema() {
 
 export default {
     testeGetTypeFromSchema: () => testeGetTypeFromSchema(),
-    test_old_schema: () => test_parse_schema(oldEntitysToTest, old_schema as IntrospectionSchema),
-    test_parse_schema: () => test_parse_schema(entitysToTest, schema as IntrospectionSchema),
+    // test_old_schema: () => test_parse_schema(oldEntitysToTest, old_schema as IntrospectionSchema),
+    // test_parse_schema: () => test_parse_schema(entitysToTest, schema as IntrospectionSchema),
     testeGetTypesFromSchema: () => testeGetTypesFromSchema()
 };

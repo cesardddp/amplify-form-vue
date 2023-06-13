@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, inject, reactive, markRaw, computed } from "vue";
+import { ref, inject, reactive, markRaw, computed, onMounted } from "vue";
 import { FormStateHandler } from "../formStorage";
 import type { ItemsProps } from "./elementsTypes";
 
@@ -12,10 +12,14 @@ const props = withDefaults(defineProps<ItemsProps>(), {
 const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
 // const bs_classes = (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
 
-const items = computed(() => {
-    return [...global_form_state_handler.state_as_Map.keys()]
-        .filter(key => (key.startsWith(props.introspect_caminho!))&&key.split(props.introspect_caminho!)[1].startsWith('['))
-        .map(key => global_form_state_handler.state_as_Map.get(key)!)
+let items = global_form_state_handler.getField(props.introspect_caminho!)
+if (items.value === undefined)
+    items.value = []
+
+onMounted(() => {
+    if (items.value.length == 0) {
+        add_item()
+    }
 })
 const ultimo_item_component = computed(
     () => items.value.length
@@ -38,27 +42,20 @@ function add_item() {
     const current_index = items.value.length - 1;
     const current_value = items.value[current_index]
     if (
-        current_value != undefined
-        && (
-            !current_value.value
-            || current_index != items.value.findIndex(rfv => rfv.value === current_value.value)
-        )
+            !current_value && current_index != items.value.findIndex((rfv:unknown) => rfv === current_value)
     ) {
         invalid.msg = current_value.value ? 'Item já existe!' : 'Item não pode ser vazio!'
         invalid.show = true, setTimeout(() => {
             invalid.show = false
         }, 2000);
     } else {
-        const key = `${props.introspect_caminho}[${items.value.length}]`
-        global_form_state_handler.addRef(key,false)
-        // const _ref = ref()
-        // global_form_state_handler.state_as_Map.set(key, _ref)
+        items.value.push(null)
     }
 }
 function del_item(global_key?: number) {
-    global_form_state_handler.state_as_Map.delete(`${props.introspect_caminho}[${global_key ?? items.value.length - 1}]`)
+    global_form_state_handler.delete(`${props.introspect_caminho}[${global_key ?? items.value.length - 1}]`)
 }
-const invalid = reactive({  
+const invalid = reactive({
     msg: 'Erro!',
     show: false
 })
@@ -69,7 +66,7 @@ const invalid = reactive({
     <section class="border rounded p-1 container">
         {{ nome }}: <span v-for="item, index in items" class="badge rounded-pill px-3 bg-primary me-1 position-relative"
             :key="index">
-            {{ index + 1 }}: {{ item.value ?? '(vazio)' }}
+            {{ index + 1 }}: {{ item ?? '(vazio)' }}
             <span @click="() => del_item(index)"
                 class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger z-1">
                 x

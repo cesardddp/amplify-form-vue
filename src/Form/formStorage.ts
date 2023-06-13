@@ -2,32 +2,42 @@ import { computed, markRaw, reactive, Ref, shallowRef, watch, WritableComputedRe
 import _ from 'lodash';
 import { Cache } from 'aws-amplify';
 import { FormFieldStyle } from './FormsElements/elementsTypes';
+import dot from 'dot-object';
 
 
 export class FormStateHandler {
-    public state_as_Map = reactive(new Map<string, Ref | Ref<unknown[]>>())
-    // public get state_as_Map(){
-    //     return this._state_as_Map
-    // }
-
     public state_as_json: WritableComputedRef<object> | undefined;
     constructor(
         public emit: Function,
-    ) {
-        this.emit = emit
+        public state: Object
+    ) { }
+
+    get(introspection_caminho: string) {
+        return dot.pick(introspection_caminho, this.state)
     }
 
+    set(introspection_caminho: string, value: any) {
+        dot.set(introspection_caminho, value, this.state)
+        return value
+    }
+    delete(introspection_caminho: string) {
+        dot.delete(introspection_caminho, this.state)
+    }
+    getField(introspection_caminho: string) {
+        return computed({
+            get:() =>{
+                return this.get(introspection_caminho)
+            },
+            set:(value) =>{
+                this.set(introspection_caminho, value)
+            }
+        })
+    }
     addRef(introspection_caminho: string, multiple: boolean) {
-        this.state_as_Map.set(
+        return this.set(
             introspection_caminho,
-            multiple ? shallowRef([]) : shallowRef()
+            multiple ? [] : undefined
         )
-        // watch(
-        //     this.state_as_Map.get(introspection_caminho)!,
-        //     () => {}, { deep: multiple }
-        // );
-        return this.state_as_Map.get(introspection_caminho)!
-
     }
 
 }

@@ -14,21 +14,11 @@ if (!props.introspect_caminho)
     throw new Error(`introspect_caminho em ${props.nome} invalido: ${props.introspect_caminho} `);
 
 
-const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
 const bs_classes = (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
 
-const _ref = global_form_state_handler.state_as_Map.get(props.introspect_caminho) ??
-    global_form_state_handler.addRef(props.introspect_caminho, false)
+const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
+const value = global_form_state_handler.getField(props.introspect_caminho)
 
-
-const value = computed({
-    get() {
-        return _ref.value
-    },
-    set(value) {
-        _ref.value = value
-    }
-})
 type Validacoes = {// TODO tirar isso para fora, como syncfusion
     required: boolean;
     minlength?: number;
@@ -177,12 +167,12 @@ className={`${selectStyle} ${fieldSizeMap.get(adaptiveFieldSize)}`}>
     <!-- :styles="{{ customStyles }}" -->
     <!-- </FieldWithError> -->
 
-    <div class="form-floating" :class="bs_classes.bs_class_wrap" data-bs-toggle="tooltip" :title="description" ref="this_select">
+    <div class="form-floating" :class="bs_classes.bs_class_wrap" data-bs-toggle="tooltip" :title="description"
+        ref="this_select">
         <select class="form-select" :name="nome" :id="introspect_caminho" v-model="value" aria-label="Floating label select"
-        :class="bs_classes.bs_class_input"
-            :required="validacao.validacoes.required">
+            :class="bs_classes.bs_class_input" :required="validacao.validacoes.required">
             <option selected value="">Selecione uma opção...</option>
-            <option v-for="op,index in options" :value="op.value" :key="index">{{ op.label ?? op.value }}</option>
+            <option v-for="op, index in options" :value="op.value" :key="index">{{ op.label ?? op.value }}</option>
         </select>
         <label :for="introspect_caminho" class="form-label" :class="bs_classes.bs_class_label">{{ label ?? nome }}</label>
     </div>

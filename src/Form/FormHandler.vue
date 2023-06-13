@@ -15,46 +15,24 @@ const input = (inject("form_types") as FormSchemasMap).get(props.form_name)!;
 // multiple logic:
 class Inner_forms_handler {
   buttons_refs: { [key: string]: Ref } = {}
-  private add_um = ref(false)
 
-  form_components_props = computed(() => {
-    const _keys = []
-    let index_encontrados: string[] = [];
-    for (let key of global_form_state_handler.state_as_Map.keys()) {
-      if (key.startsWith(props.introspection_caminho)) {
+  public forms_datas = global_form_state_handler.getField(props.introspection_caminho)
 
-        const field = key.split(props.introspection_caminho + "[").pop()!.split("]").shift()!;
-
-        const index = field.split(".").shift()!;
-        if (index_encontrados.includes(index)) continue;
-        index_encontrados.push(index);
-        _keys.push(`${props.introspection_caminho}[${index}]`)
-      }
+  constructor() {
+    if (this.forms_datas.value === undefined) {
+      this.forms_datas.value = []
     }
+  }
 
-
-    // para novo form item, altera add_um pra true, isso força o recalculo do computed, computando com mais um item após o ultimo indexado no geranciador global
-    if (this.add_um.value) {
-      const last_indice = Number(index_encontrados.pop() ?? -1)
-      const key = `${props.introspection_caminho}[${last_indice + 1}]`
-      _keys.push(key)
-      this.buttons_refs[key] = ref()
-
-      // retorna add_um pra false pra não adicionar novamente no proximo computed
-      this.add_um.value = false
-
-
-      setTimeout(() => {
-
-        this.buttons_refs[key].value[0].click()
-      }, 100)
-    }
-
-    return _keys
-      .map((introspect_caminho) => this.copia_e_preenche_form_props_com_introspec_caminho(introspect_caminho))
-  })
+  form_components_props = //global_form_state_handler.getField(props.introspection_caminho)
+    computed(() => (this.forms_datas.value as Ref[])
+      .map(
+        (data, index) => this.copia_e_preenche_form_props_com_introspec_caminho(
+          `${props.introspection_caminho}[${index}]`
+        ))
+    )
   novo_item_form() {
-    this.add_um.value = true
+    this.forms_datas.value.push(null)
   }
 
   copia_e_preenche_form_props_com_introspec_caminho(introspect_caminho: string) {
@@ -81,24 +59,7 @@ class Inner_forms_handler {
   }
 
   remove_item(introspect_caminho: string) {
-    [...global_form_state_handler.state_as_Map.keys()]
-      .filter(key => {
-
-        const t = key.startsWith(introspect_caminho);
-        if (t) {
-          console.log(introspect_caminho);
-
-          console.log(key);
-          console.log(
-            global_form_state_handler.state_as_Map.get(key)?.value
-          );
-
-          // debugger
-        }
-        return t
-      })
-      .map(key => global_form_state_handler.state_as_Map.delete(key))
-
+    global_form_state_handler.delete(introspect_caminho)
     delete this.buttons_refs[introspect_caminho];
   }
 }
@@ -121,16 +82,13 @@ if (input.multiple) {
   })
 }
 
-function get_form_field_content(introspect_caminho: string) {
-  const ppp = [
-    ...global_form_state_handler.state_as_Map.keys()
-  ].filter(i => i.startsWith(introspect_caminho)).slice(0, 5)
-    .map(k => [k.split('.').pop(), global_form_state_handler.state_as_Map.get(k)?.value])
+function get_form_field_content(index: number) {
+  const ppp = inner_forms_handler.forms_datas.value[index];
 
   if (!ppp || ppp.length <= 0) return
 
-  const first = ppp[0]
-  return first[1] ? first[1] : '(editando)'
+  const first = Object.values(ppp).filter(f=>typeof f != 'object')[0];
+  return first ? first : '(editando)'
 }
 </script>
 <template>
@@ -156,7 +114,7 @@ function get_form_field_content(introspect_caminho: string) {
           :data-bs-target="`#${form?.introspection_caminho}`" type="button" role="tab"
           :aria-controls="`${form?.introspection_caminho}`" aria-selected="false" :class="index === 0 ? 'active' : ''"
           :ref="inner_forms_handler.buttons_refs[form.introspection_caminho]">
-          {{ index + 1 }}: {{ get_form_field_content(form.introspection_caminho) ?? '(editando)' }}
+          {{ index + 1 }}: {{ get_form_field_content(index) ?? '(editando)' }}
         </button>
 
       </li>
@@ -169,10 +127,11 @@ function get_form_field_content(introspect_caminho: string) {
 
     <!-- Tab panes -->
     <div class="tab-content">
-      <div v-for="form, index in inner_forms_handler.form_components_props.value" class="tab-pane"
+      <div v-for="form, index in inner_forms_handler.form_components_props.value  " class="tab-pane"
         :id="`${form.introspection_caminho}`" role="tabpanel" :aria-labelledby="`${form?.introspection_caminho}-tab`"
         :class="index === 0 ? 'active' : ''" :key="form.introspection_caminho">
 
+        <!-- {{ form }} -->
         <Form v-bind="form" />
       </div>
     </div>
