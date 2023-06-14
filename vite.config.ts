@@ -44,11 +44,12 @@ export default defineConfig({
         "dot-object",
         "lodash",
         "lodash.debounce",
+        "maska",
         "sass",
         "vue",
         "vue-class-component",
         "vue-json-pretty",
-        "maska"
+        "lodash.throttle"
       ],
       output: {
         // Provide global variables to use in the UMD build
@@ -56,6 +57,7 @@ export default defineConfig({
 
         globals: {
           vue: 'Vue',
+          "lodash.throttle": "lodash.throttle",
           "@aws-amplify/api": "@aws-amplify/api",
           "@syncfusion/ej2-base": "@syncfusion/ej2-base",
           "@syncfusion/ej2-data": "@syncfusion/ej2-data",
@@ -72,10 +74,10 @@ export default defineConfig({
           "dot-object": "dot-object",
           "lodash": "lodash",
           "lodash.debounce": "lodash.debounce",
+          "maska": "maska",
           "sass": "sass",
           "vue-class-component": "vue-class-component",
           "vue-json-pretty": "vue-json-pretty",
-          "maska":"maska"
         }
       }
     },
