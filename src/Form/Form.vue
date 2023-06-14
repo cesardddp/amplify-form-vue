@@ -30,10 +30,10 @@ function set_qtd_itens(e: {
 const edit_mode = ref(false)
 const formStylingHandler = inject<FormStylingHandler>("form_styling_handler")
 const form_fields = computed(() => input.form_fields.filter(
-    form_field => {
-        return edit_mode.value || !(formStylingHandler?.get_field_references(
-            `${props.introspection_caminho}.${form_field.nome}`
-        ).nao_usar.value ?? false)
+    async form_field => {
+        return edit_mode.value || !((await formStylingHandler?.get_field_references(
+`${props.introspection_caminho}.${form_field.nome}`
+))!.nao_usar.value ?? false)
     }
 ))
 const validacao = inject<Validacao>("validacao")!

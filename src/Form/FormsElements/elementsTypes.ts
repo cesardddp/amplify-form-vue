@@ -4,14 +4,6 @@ import Input from "./Input.vue";
 
 export type OpcoesValidacoes = '' | 'required' | `minLength:${number}` | `maxLength:${number}`;
 
-export type FormFieldStyle = {
-    bs_class_wrap: string,
-    bs_class_label: string,
-    bs_class_input: string,
-    esconder: boolean,
-    nao_usar: boolean,
-    mask?:string
-}
 
 type BaseComponent = {
     nome: string;

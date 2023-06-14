@@ -13,9 +13,10 @@ export default defineComponent({
         modelValue: {
             type: Object, default: () => ({}),
         },
-        validar: { type: Boolean }
+        validar: { type: Boolean },
+        form_id: { type: String }
     },
-    emits: ['form_types', 'update:modelValue', 'validado'],
+    emits: ['update:modelValue', 'validado'],
     components: {
         FormHandler
     },
@@ -32,11 +33,20 @@ export default defineComponent({
             props.introspectionSchema
         )
 
-        emit('form_types', Object.fromEntries(form_types.entries()))
+        const status = ref<'parado' | 'atualizando' | 'erro' | 'sucesso'>('parado')
+        const status_form_style = {
+            set_status:(status_: 'parado' | 'atualizando' | 'erro' | 'sucesso') =>{
+                status.value = status_
+                status.value != 'atualizando' && setTimeout(() => {
+                    status.value = 'parado'
+                }, 2000)
+            },
+        }
+
 
         provide("form_state_handler", form_state_handler)
         provide("form_types", form_types)
-        provide("form_styling_handler", new FormStylingHandler())
+        provide("form_styling_handler", new FormStylingHandler(props.form_id!, status_form_style.set_status))
 
         const validacao = reactive<Validacao>({
             trigger_validacao: computed(() => props.validar),
@@ -55,12 +65,27 @@ export default defineComponent({
 
 
         return {
-            input_nome: form_types.keys().next().value,
+            input_nome: form_types.keys().next().value, status_form_style,status
         }
     }
 })
 </script>
 <template>
+    <section v-if="!(status === 'parado')" style="font-size:small">
+        <span v-if="status === 'atualizando'" class="text-info text-opacity-75">
+            <div class="spinner-grow spinner-grow-sm " role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>Atualizando form...
+        </span>
+        <span v-else-if="status === 'erro'" class="text-danger text-opacity-75">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            Erro ao atualizar form!
+        </span>
+        <span v-else-if="status === 'sucesso'" class="text-success text-opacity-75">
+            <i class="bi bi-check-circle-fill"></i>
+            Form atualizado com sucesso!
+        </span>
+    </section>
     <FormHandler :introspection_caminho="'root'" :form_name="input_nome" :field_name="input_nome"
         :is_multipleform_item="false" />
 </template>

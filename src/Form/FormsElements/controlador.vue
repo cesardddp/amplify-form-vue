@@ -8,12 +8,12 @@ const slot_props = defineProps<{
 }>(
 );
 
-const props_com_css_bs_classes = ref<'bs_class_wrap' | 'bs_class_label' | 'bs_class_input'>('bs_class_input')
+const props_com_css_bs_classes = ref<'bs_class_wrap' | 'bs_class_label' | 'bs_class_input' >('bs_class_input')
 const posicao_selecionada = ref<'p' | 'm'>('m') //margin padding
 
 
 
-const formStylingHandler = (inject("form_styling_handler") as FormStylingHandler).get_field_references(slot_props.introspect_caminho!);
+const formStylingHandler = await (inject("form_styling_handler") as FormStylingHandler).get_field_references(slot_props.introspect_caminho!);
 
 // SELEÇÃO DO TAMANHO DE MARGEM E PADDING
 const get_computed = (posicao: 's' | 'e' | 't' | 'b') => {

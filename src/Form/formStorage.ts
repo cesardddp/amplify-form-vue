@@ -1,9 +1,11 @@
 import { computed, markRaw, reactive, Ref, shallowRef, watch, WritableComputedRef } from 'vue';
-import _ from 'lodash';
-import { Cache } from 'aws-amplify';
-import { FormFieldStyle } from './FormsElements/elementsTypes';
+import { API, Cache } from 'aws-amplify';
 import dot from 'dot-object';
-
+import { UpdateCampoFormEstiloMutation, CampoFormEstilo, ListCampoFormEstilosQuery, ListCampoFormEstilosQueryVariables, CreateCampoFormEstiloInput, CreateCampoFormEstiloMutation, CreateCampoFormEstiloMutationVariables, GetCampoFormEstiloQuery, GetCampoFormEstiloQueryVariables, ModelCampoFormEstiloFilterInput, UpdateCampoFormEstiloMutationVariables, UpdateCampoFormEstiloInput } from '../../merm-schema/merm-types';
+import { getCampoFormEstilo, listCampoFormEstilos } from '../../merm-schema/graphql/queries';
+import { createCampoFormEstilo, updateCampoFormEstilo } from '../../merm-schema/graphql/mutations';
+import { GraphQLResult } from '@aws-amplify/api';
+import debounce from "lodash.debounce";
 
 export class FormStateHandler {
     public state_as_json: WritableComputedRef<object> | undefined;
@@ -25,10 +27,10 @@ export class FormStateHandler {
     }
     getField(introspection_caminho: string) {
         return computed({
-            get:() =>{
+            get: () => {
                 return this.get(introspection_caminho)
             },
-            set:(value) =>{
+            set: (value) => {
                 this.set(introspection_caminho, value)
             }
         })
@@ -48,31 +50,114 @@ export class FormStylingHandler {
 
     private cacheKeyPrefix = "style."
 
-    style_state_as_Map = reactive(new Map<string, Ref<FormFieldStyle>>())
+    style_state_as_Map = reactive(new Map<string, Ref<CampoFormEstilo>>())
 
-    constructor() {
+    constructor(public form_id: string, private set_status: (status: 'parado' | 'atualizando' | 'erro' | 'sucesso') => void) {
         // Cache.clear()
         const cache_keys = (Cache.getAllKeys() as string[]).filter(k => k.startsWith(this.cacheKeyPrefix));
         for (let k of cache_keys) {
             this.style_state_as_Map.set(
                 k,
-                shallowRef<FormFieldStyle>(Cache.getItem(k))
+                shallowRef<CampoFormEstilo>(Cache.getItem(k))
             )
         }
     }
 
-    get_field_references(introspection_caminho: string) {
+    async graphql_pega(id: string, graphql_query?: string) {
+        const result = await (API.graphql({
+            query: getCampoFormEstilo,
+            variables: { id } satisfies GetCampoFormEstiloQueryVariables,
+            authMode: "AMAZON_COGNITO_USER_POOLS"
+        }) as Promise<GraphQLResult<GetCampoFormEstiloQuery>>);
+        debugger
+        return result.data!.getCampoFormEstilo
+
+    }
+    async graphql_cria(campoFormEstilo: CreateCampoFormEstiloInput) {
+        const result = await (API.graphql({
+            query: createCampoFormEstilo,
+            variables: { input: { ...campoFormEstilo, amplifyFormVueEstilosCamposId: this.form_id } } satisfies CreateCampoFormEstiloMutationVariables,
+            authMode: "AMAZON_COGNITO_USER_POOLS"
+        }) as Promise<GraphQLResult<CreateCampoFormEstiloMutation>>);
+        return result.data!.createCampoFormEstilo!
+    }
+    async graphql_lista(introspection_caminho: string) {
+        const result = await (API.graphql({
+            query: listCampoFormEstilos,
+            variables: {
+                filter: {
+
+                    amplifyFormVueEstilosCamposId: { eq: this.form_id },
+                    introspection_caminho: { eq: introspection_caminho }
+                }
+            } satisfies ListCampoFormEstilosQueryVariables,
+            authMode: "AMAZON_COGNITO_USER_POOLS"
+        }) as Promise<GraphQLResult<ListCampoFormEstilosQuery>>);
+        return result.data!.listCampoFormEstilos?.items.pop()
+
+    }
+    private graphql_atualiza = debounce(
+        this.graphql_atualiza_,
+        1000, { leading: false, trailing: true }
+    )
+    async graphql_atualiza_(campoFormEstilo: CampoFormEstilo) {
+        this.set_status('atualizando')
+        const payload = {
+            bs_class_input: campoFormEstilo.bs_class_input,
+            bs_class_label: campoFormEstilo.bs_class_label,
+            bs_class_wrap: campoFormEstilo.bs_class_wrap,
+            esconder: campoFormEstilo.esconder,
+            nao_usar: campoFormEstilo.nao_usar,
+            mask: campoFormEstilo.mask,
+            id: campoFormEstilo.id,
+        } satisfies UpdateCampoFormEstiloInput;
+
+        try {
+            const result = await (API.graphql({
+                query: updateCampoFormEstilo,
+                variables: { input: payload } satisfies UpdateCampoFormEstiloMutationVariables,
+                authMode: "AMAZON_COGNITO_USER_POOLS"
+            }) as Promise<GraphQLResult<UpdateCampoFormEstiloMutation>>);
+            this.set_status('sucesso')
+            return result.data!.updateCampoFormEstilo!
+        } catch (e) {
+            console.log(JSON.stringify(e));
+            this.set_status('erro')
+            debugger
+        }
+
+    }
+
+    async get_field_references(introspection_caminho: string) {
         const key = this.cacheKeyPrefix + introspection_caminho;
 
         if (!this.style_state_as_Map.has(key)) {
-            const new_v = {
-                bs_class_wrap: "",
-                bs_class_label: "",
-                bs_class_input: "",
-                esconder: false,
-                nao_usar: false,
-                mask:""
-            } satisfies FormFieldStyle;
+            let new_v
+            try {
+                new_v = await this.graphql_lista(
+                    introspection_caminho
+                )
+            } catch (e) { console.log(e); debugger; throw e; }
+
+            if (!new_v) {
+                console.log("estilo não encontrado, criando...");
+
+                try {
+
+                    new_v = await this.graphql_cria(
+                        {
+                            bs_class_wrap: "",
+                            bs_class_label: "",
+                            bs_class_input: "",
+                            esconder: false,
+                            nao_usar: false,
+                            mask: "",
+                            introspection_caminho,
+                        }
+                    )
+                } catch (e) { console.log(e); debugger; throw e; }
+
+            }
             this.style_state_as_Map.set(
                 key,
                 shallowRef(new_v)
@@ -86,24 +171,34 @@ export class FormStylingHandler {
 
         const bs_class_label = computed({
             get: () => this.style_state_as_Map.get(key)!.value.bs_class_label,
-            set: (value) => {
-                this.style_state_as_Map.get(key)!.value = {
-                    ...this.style_state_as_Map.get(key)!.value,
-                    bs_class_label: value
+            set:
+                async (value) => {
+                    this.style_state_as_Map.get(key)!.value = {
+                        ...this.style_state_as_Map.get(key)!.value,
+                        bs_class_label: value
+                    }
+                    this.graphql_atualiza(
+                        this.style_state_as_Map.get(key)!.value
+                    )
+
+                    Cache.setItem(
+                        key,
+                        this.style_state_as_Map.get(key)!.value
+                    )
                 }
-                Cache.setItem(
-                    key,
-                    this.style_state_as_Map.get(key)!.value
-                )
-            }
+
         })
         const bs_class_input = computed({
             get: () => this.style_state_as_Map.get(key)!.value.bs_class_input,
-            set: (value) => {
+            set: async (value) => {
                 this.style_state_as_Map.get(key)!.value = {
                     ...this.style_state_as_Map.get(key)!.value,
                     bs_class_input: value
                 }
+
+                await this.graphql_atualiza(
+                    this.style_state_as_Map.get(key)!.value
+                )
                 Cache.setItem(
                     key,
                     this.style_state_as_Map.get(key)!.value
@@ -112,11 +207,14 @@ export class FormStylingHandler {
         })
         const bs_class_wrap = computed({
             get: () => this.style_state_as_Map.get(key)!.value.bs_class_wrap,
-            set: (value) => {
+            set: async (value) => {
                 this.style_state_as_Map.get(key)!.value = {
                     ...this.style_state_as_Map.get(key)!.value,
                     bs_class_wrap: value
                 }
+                await this.graphql_atualiza(
+                    this.style_state_as_Map.get(key)!.value
+                )
                 Cache.setItem(
                     key,
                     this.style_state_as_Map.get(key)!.value
@@ -126,6 +224,15 @@ export class FormStylingHandler {
         })
 
         const clear_style = () => {
+            this.style_state_as_Map.get(key)!.value = {
+                ...this.style_state_as_Map.get(key)!.value,
+                bs_class_wrap: "",
+                bs_class_label: "",
+                bs_class_input: "",
+                esconder: false,
+                nao_usar: false,
+
+            }
             Cache.setItem(
                 key,
                 {
@@ -134,13 +241,6 @@ export class FormStylingHandler {
                     bs_class_input: ""
                 }
             )
-            this.style_state_as_Map.get(key)!.value = {
-                bs_class_wrap: "",
-                bs_class_label: "",
-                bs_class_input: "",
-                esconder: false,
-                nao_usar: false
-            }
         }
 
         return {
@@ -150,11 +250,14 @@ export class FormStylingHandler {
             clear_style,
             esconder: computed({
                 get: () => this.style_state_as_Map.get(key)!.value.esconder,
-                set: (value) => {
+                set: async (value) => {
                     this.style_state_as_Map.get(key)!.value = {
                         ...this.style_state_as_Map.get(key)!.value,
                         esconder: value
                     }
+                    await this.graphql_atualiza(
+                        this.style_state_as_Map.get(key)!.value
+                    )
                     Cache.setItem(
                         key,
                         this.style_state_as_Map.get(key)!.value
@@ -163,24 +266,30 @@ export class FormStylingHandler {
             }),
             nao_usar: computed({
                 get: () => this.style_state_as_Map.get(key)!.value.nao_usar,
-                set: (value) => {
+                set: async (value) => {
                     this.style_state_as_Map.get(key)!.value = {
                         ...this.style_state_as_Map.get(key)!.value,
                         nao_usar: value
                     }
+                    await this.graphql_atualiza(
+                        this.style_state_as_Map.get(key)!.value
+                    )
                     Cache.setItem(
                         key,
                         this.style_state_as_Map.get(key)!.value
                     )
                 }
             }),
-            mask:computed({
+            mask: computed({
                 get: () => this.style_state_as_Map.get(key)!.value.mask,
-                set: (value) => {
+                set: async (value) => {
                     this.style_state_as_Map.get(key)!.value = {
                         ...this.style_state_as_Map.get(key)!.value,
                         mask: value
                     }
+                    await this.graphql_atualiza(
+                        this.style_state_as_Map.get(key)!.value
+                    )
                     Cache.setItem(
                         key,
                         this.style_state_as_Map.get(key)!.value

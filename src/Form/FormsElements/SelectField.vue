@@ -14,7 +14,7 @@ if (!props.introspect_caminho)
     throw new Error(`introspect_caminho em ${props.nome} invalido: ${props.introspect_caminho} `);
 
 
-const bs_classes = (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
+const bs_classes = await (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
 
 const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
 const value = global_form_state_handler.getField(props.introspect_caminho)
