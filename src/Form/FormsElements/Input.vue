@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Input } from "@syncfusion/ej2-inputs";
-import { onMounted, ref, computed, inject, onUnmounted, ComputedRef } from "vue";
+import { onMounted, ref, computed, inject, watch, ComputedRef } from "vue";
 import { FormStateHandler, FormStylingHandler } from "../formStorage";
 import type { InputProps, Validacoes } from "./elementsTypes";
 import { Tooltip } from "bootstrap";
@@ -17,7 +17,10 @@ if (!props.introspect_caminho)
     throw new Error(`Não foi passado introspect_caminho em ${props.nome}: ${props.introspect_caminho} `);
 
 const global_form_state_handler = (inject('form_state_handler') as FormStateHandler)
-const value = global_form_state_handler.getField(props.introspect_caminho!)
+
+const data = global_form_state_handler.getField(props.introspect_caminho!)
+
+
 
 const validacao = computed(() => {
     let valid_feedback_msg: string[] = [];
@@ -32,7 +35,7 @@ const validacao = computed(() => {
         // debugger
         switch (v) {
             case 'required':
-                invalid_feedback.push({ msg: 'Por favor, preencha esse campo!', show: computed(() => !value.value) })
+                invalid_feedback.push({ msg: 'Por favor, preencha esse campo!', show: computed(() => !data.value) })
                 validacoes.required = true
                 break;
             case v.match(/minlength:[0-9]*/)?.input:
@@ -58,7 +61,7 @@ const validacao = computed(() => {
         validacoes
     }
 })
-const bs_classes = (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
+const bs_classes = await (inject("form_styling_handler") as FormStylingHandler).get_field_references(props.introspect_caminho)!;
 
 const cssSFClass = computed(
     () => {
@@ -143,6 +146,12 @@ onMounted(() => {
     if (props.focus_on_mount) {
         this_input.value.focus();
     }
+    if (props.type === 'number') {
+        watch(data, () => {
+            if (data.value === "")
+                data.value = null;
+        })
+    }
 });
 </script>
 <template>
@@ -150,8 +159,8 @@ onMounted(() => {
     <div v-if="bootstrap_syncfusion === 'bs'">
 
         <div :class="bs_class_wrap">
-            <!-- {{ bs_classes.mask }} -->
-            <input :class="bs_class_input" v-model="value" :type='type' :id="introspect_caminho" :name="introspect_caminho"
+            <!-- {{ bs_classes }} -->
+            <input :class="bs_class_input" v-model="data" :type='type' :id="introspect_caminho" :name="introspect_caminho"
                 :placeholder="placeholder ?? 'Insira ' + nome" :step="step" :disabled="disabled"
                 :required="validacao.validacoes.required" :minlength="validacao.validacoes.minlength"
                 :maxlength="validacao.validacoes.maxlength" data-bs-toggle="tooltip" :title="description" ref="this_input"
@@ -170,16 +179,16 @@ onMounted(() => {
     </div>
     <div v-else-if="bootstrap_syncfusion === 'sf'">
         <div v-if="type === 'checkbox'" :class="bs_class_wrap">
-            <ejs-checkbox :label='label' :cssClass='cssSFClass' v-model="value" :disabled="disabled"></ejs-checkbox>
+            <ejs-checkbox :label='label' :cssClass='cssSFClass' v-model="data" :disabled="disabled"></ejs-checkbox>
         </div>
         <div v-else-if="type === 'text'" :class="bs_class_wrap">
             <ejs-textbox :cssclass="bs_class_input" :name='introspect_caminho' :multiline="is_text_area"
-                :placeholder="placeholder ? placeholder : nome" v-model="value" :floatLabelType="floatLabelType"
+                :placeholder="placeholder ? placeholder : nome" v-model="data" :floatLabelType="floatLabelType"
                 :disabled="disabled" :cssClass='cssSFClass'></ejs-textbox>
 
         </div>
         <div v-else-if="type === 'number'" :class="bs_class_wrap">
-            <ejs-numerictextbox :label='label' :cssClass='cssSFClass' v-model="value" :disabled="disabled"
+            <ejs-numerictextbox :label='label' :cssClass='cssSFClass' v-model="data" :disabled="disabled"
                 :currency="currency"></ejs-numerictextbox>
         </div>
     </div>
