@@ -15,12 +15,3 @@ export interface FormHandlerProps {
     introspection_caminho: string
     is_multipleform_item: boolean
 }
-
-export interface Validacao{
-        trigger_validacao: ComputedRef<boolean>,
-        validado: boolean,
-        validacoes: {
-            elemento: string,
-            erros: string[]
-        }[]
-}

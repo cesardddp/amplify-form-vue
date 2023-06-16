@@ -1,9 +1,9 @@
 <script setup lang="ts" >
-import { computed, inject, reactive, ref, watch } from "vue";
+import { computed, inject, onMounted, reactive, ref, watch } from "vue";
 import { FormProps, Validacao } from "./formTypes";
 import FormHandler from "./FormHandler.vue";
 import FormFieldEditor from "./FormsElements/controlador.vue";
-import { FormStylingHandler } from "./formStorage";
+import { FormStylingHandler,FormsValidation } from "./formStorage";
 
 const props = defineProps<FormProps>()
 
@@ -32,30 +32,44 @@ const formStylingHandler = inject<FormStylingHandler>("form_styling_handler")
 const form_fields = computed(() => input.form_fields.filter(
     async form_field => {
         return edit_mode.value || !((await formStylingHandler?.get_field_references(
-`${props.introspection_caminho}.${form_field.nome}`
-))!.nao_usar.value ?? false)
+            `${props.introspection_caminho}.${form_field.nome}`
+        ))!.nao_usar.value ?? false)
     }
 ))
-const validacao = inject<Validacao>("validacao")!
+const validacao = inject<FormsValidation>("validacao")!
 const formElement = ref<HTMLFormElement>()
-watch(()=>validacao.trigger_validacao, () => {
-    if (validacao.trigger_validacao) {
-        const v = formElement.value!.reportValidity()
-        
-        validacao.validado = validacao.validado && v
-        // formElement.value.
-        if (!v) {
-            // alert(props.introspection_caminho)
-            validacao.validacoes.push({
-                elemento: props.introspection_caminho,
-                erros: ["?"]
-            })
-        }
-    }
+
+const was_validated = computed(() => validacao.state.get(props.introspection_caminho)?.validar)
+onMounted(()=>{
+    validacao.state.set(props.introspection_caminho, {
+        formElement,
+        erros:[],
+        validado: false,
+        validar:false
+    })
 })
+// checou_o_form: false, validado: false, trigger: () => {
+//     const v = formElement.value!.reportValidity()
+//     was_validated.value = true;
+//     validacao.forms.get(props.introspection_caminho)!.checou_o_form = true;
+//     validacao.forms.get(props.introspection_caminho)!.validado = v;
+
+//     if ([...validacao.forms.values()].every(v => v.checou_o_form)) {
+//         validacao.validar()
+//     }
+//     if (!v) {
+//         validacao.validacoes.push({
+//             elemento: props.introspection_caminho,
+//             erros: ["?"]
+//         })
+//     }
+// }
+
 </script>
 <template>
     <!-- {{ validacao }} -->
+    <p> {{ was_validated }}</p>
+    <p> {{ validacao.state.get(props.introspection_caminho) }}</p>
     <div class="btn-group dropstart">
         <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             ...
@@ -68,7 +82,8 @@ watch(()=>validacao.trigger_validacao, () => {
         X Fechar edição
     </button>
     <!-- ITEM FIELDS -->
-    <form ref="formElement" role="form" :class="{'opacity-50':set_opacity,'was-validated':validacao.trigger_validacao}">
+    <form ref="formElement" role="form"
+        :class="{ 'opacity-50': set_opacity, 'was-validated': was_validated }">
         <div @click="set_opacity = false" class="my-1" v-for="form_field in form_fields">
             <FormFieldEditor v-if="edit_mode" :introspect_caminho="`${introspection_caminho}.${form_field.nome}`">
                 <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"

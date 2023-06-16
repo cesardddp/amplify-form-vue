@@ -23,6 +23,7 @@ const form_view = {
 type testes = 'allTypes' | 'Campo' | 'Modulo' | 'Api' | 'App' | 'Model' | 'Tela' | 'Suite Test';
 const testando = reactive({
   quem: Cache.getItem('testando', { callback: () => 'Campo' }) as testes,
+  id: "55b740f5-1184-458c-b8ec-d10e5b93212c",
   set(quem: testes) {
     this.quem = quem;
     Cache.setItem('testando', quem)
@@ -177,11 +178,13 @@ const vmodelteste = ref(testando.quem !== 'App' ? {} :
 )
 const validar = ref(false);
 function submit() {
-  validar.value = true
+  alert(amplForm.value.validacao.validar())
+  // debugger
+  alert(
+    amplForm.value.validacao.erros
+  )
 }
-function validou(v: boolean) {
-  // alert(v)
-}
+const amplForm = ref()
 </script>
 <template>
   <!-- <input type="text" name="" v-model="vmodelteste.nome" id=""> -->
@@ -203,11 +206,26 @@ function validou(v: boolean) {
     <div class="row" v-if="testando.quem !== 'Suite Test'">
 
       <div class="col">
-        <AmplifyFormVue
-          v-bind="{ introspectionSchema: schema as IntrospectionSchema, entity_name: testando.quem, validar }"
-          :key="testando.quem" v-model="vmodelteste" @validado="validou" />
+
+
+
+        <Suspense>
+          <AmplifyFormVue ref="amplForm"
+            v-bind="{ introspectionSchema: schema as IntrospectionSchema, entity_name: testando.quem, form_id: testando.id }"
+            :key="testando.quem" v-model="vmodelteste"/>
+          <template #fallback>
+            <div class="d-flex justify-content-center align-items-center w-100 h-50 ">
+              <div class="spinner-border text-primary" style="width: 7rem; height: 7rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </template>
+        </Suspense>
         <button type="button" @click="submit" class="btn btn-primary">submit</button>
         {{ validar }}
+
+
+
       </div>
       <div class="col-4">
         <div class="sticky-top">

@@ -300,3 +300,38 @@ export class FormStylingHandler {
         }
     }
 }
+
+
+export class FormsValidation {
+
+    public state = reactive(new Map<string, {
+        validar: boolean,
+        erros: string[],
+        validado: boolean,
+        formElement: HTMLFormElement
+    }>()
+    )
+
+    get valido() {
+        return [...this.state.values()].every(v => v.validado)
+    }
+    get erros() {
+        return [...this.state.values()].flatMap(v => v.erros)
+    }
+    validar() {
+        this.state.forEach(v => {
+            v.validar = true
+            v.validado = v.formElement.checkValidity()
+            v.erros = Object.values(v.formElement.elements)
+                .filter(i => (i instanceof HTMLInputElement) && !i.validity.valid)
+                .map(i => {
+                    console.log(`Campo ${i.localName}: ${(i as HTMLInputElement).validationMessage}`);
+                    const input = i as HTMLInputElement
+                    return `Campo ${input.name}: ${input.validationMessage}`
+                })
+            v.formElement
+        })
+        return this.valido
+    }
+
+}
