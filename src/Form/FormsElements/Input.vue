@@ -2,7 +2,7 @@
 import { Input } from "@syncfusion/ej2-inputs";
 import { onMounted, ref, computed, inject, watch, ComputedRef } from "vue";
 import { FormStateHandler, FormStylingHandler } from "../formStorage";
-import type { InputProps, Validacoes } from "./elementsTypes";
+import type { InputProps, Validacoes } from "@/Form/FormsElements/elementsTypes";
 import { Tooltip } from "bootstrap";
 
 

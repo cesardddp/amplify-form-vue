@@ -3,7 +3,7 @@ import { computed, inject, Ref, watchEffect } from "vue";
 import Form from "./Form.vue";
 import { FormSchemasMap, FormSchema } from "./parse-introspection";
 import { FormStateHandler as GlobalFormStateHandler } from "./formStorage";
-import { FormHandlerProps, FormProps } from "./formTypes";
+import { FormHandlerProps, FormProps } from "@/Form/formTypes";
 
 const props = defineProps<FormHandlerProps>()
 const emits = defineEmits(['qtos_forms'])

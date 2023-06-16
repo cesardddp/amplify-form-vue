@@ -2,7 +2,7 @@
 import { Popover, Tooltip } from "bootstrap";
 import { computed, inject, onMounted, onUnmounted, ref, toRef, watch } from "vue";
 import { FormStateHandler, FormStylingHandler } from "../formStorage";
-import type { SelectProps } from "./elementsTypes";
+import type { SelectProps } from "@/Form/FormsElements/elementsTypes";
 
 
 const props = withDefaults(defineProps<SelectProps>(), {

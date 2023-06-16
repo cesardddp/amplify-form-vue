@@ -1,9 +1,9 @@
 <script setup lang="ts" >
 import { computed, inject, onMounted, reactive, ref, watch } from "vue";
-import { FormProps, Validacao } from "./formTypes";
+import { FormProps } from "@/Form/formTypes";
 import FormHandler from "./FormHandler.vue";
 import FormFieldEditor from "./FormsElements/controlador.vue";
-import { FormStylingHandler,FormsValidation } from "./formStorage";
+import { FormStylingHandler, FormsValidation } from "./formStorage";
 
 const props = defineProps<FormProps>()
 
@@ -37,15 +37,15 @@ const form_fields = computed(() => input.form_fields.filter(
     }
 ))
 const validacao = inject<FormsValidation>("validacao")!
-const formElement = ref<HTMLFormElement>()
+const formElement = ref()
 
 const was_validated = computed(() => validacao.state.get(props.introspection_caminho)?.validar)
-onMounted(()=>{
+onMounted(() => {
     validacao.state.set(props.introspection_caminho, {
-        formElement,
-        erros:[],
+        formElement:formElement.value,
+        erros: [],
         validado: false,
-        validar:false
+        validar: false
     })
 })
 // checou_o_form: false, validado: false, trigger: () => {
@@ -67,9 +67,6 @@ onMounted(()=>{
 
 </script>
 <template>
-    <!-- {{ validacao }} -->
-    <p> {{ was_validated }}</p>
-    <p> {{ validacao.state.get(props.introspection_caminho) }}</p>
     <div class="btn-group dropstart">
         <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             ...
@@ -82,8 +79,7 @@ onMounted(()=>{
         X Fechar edição
     </button>
     <!-- ITEM FIELDS -->
-    <form ref="formElement" role="form"
-        :class="{ 'opacity-50': set_opacity, 'was-validated': was_validated }">
+    <form  @submit.prevent ref="formElement" role="form" :class="{ 'opacity-50': set_opacity, 'was-validated': was_validated }">
         <div @click="set_opacity = false" class="my-1" v-for="form_field in form_fields">
             <FormFieldEditor v-if="edit_mode" :introspect_caminho="`${introspection_caminho}.${form_field.nome}`">
                 <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"

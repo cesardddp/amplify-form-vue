@@ -8,9 +8,7 @@ import FormHandler from "./FormHandler.vue";
 interface AmplifyForm {
     introspectionSchema: IntrospectionSchema,
     entity_name: string,
-    modelValue: {
-        type: Object, default: () => ({}),
-    },
+    modelValue: Object
     form_id: string
 }
 
@@ -53,7 +51,6 @@ provide("validacao", validacao)
 
 </script>
 <template>
-    {{ validacao.state }}
     <section v-if="!(status === 'parado')" style="font-size:small">
         <span v-if="status === 'atualizando'" class="text-info text-opacity-75">
             <div class="spinner-grow spinner-grow-sm " role="status">

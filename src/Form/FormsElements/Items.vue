@@ -2,7 +2,7 @@
 
 import { ref, inject, reactive, markRaw, computed, onMounted } from "vue";
 import { FormStateHandler } from "../formStorage";
-import type { ItemsProps } from "./elementsTypes";
+import type { ItemsProps } from "@/Form/FormsElements/elementsTypes";
 
 const props = withDefaults(defineProps<ItemsProps>(), {
     // bootstrap_syncfusion: 'bs',

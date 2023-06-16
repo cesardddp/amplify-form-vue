@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import testForm from "./Form/tests/testForm.vue";
-import testTabela from "./Grid/testTabela.vue";
+// import testTabela from "./Grid/testTabela.vue";
 
 const exibir = ref<'form' | 'tabela'>('tabela')
 watch(exibir, (exibir) => {
