@@ -44,11 +44,10 @@ export class FormStateHandler {
 
 }
 
-
-
 export class FormStylingHandler {
 
     private cacheKeyPrefix = "style."
+    private erro_reportado = false;
 
     style_state_as_Map = reactive(new Map<string, Ref<CampoFormEstilo>>())
 
@@ -69,7 +68,12 @@ export class FormStylingHandler {
             variables: { id } satisfies GetCampoFormEstiloQueryVariables,
             authMode: "AMAZON_COGNITO_USER_POOLS"
         }) as Promise<GraphQLResult<GetCampoFormEstiloQuery>>);
-        debugger
+        // if (!this.erro_reportado) {
+        //     debugger
+        //     alert("Não foi possível conectar no banco de dados, trabalhando apenas com cache local");
+        //     console.log(e);
+        //     this.erro_reportado = true;
+        // }
         return result.data!.getCampoFormEstilo
 
     }
@@ -123,7 +127,12 @@ export class FormStylingHandler {
         } catch (e) {
             console.log(JSON.stringify(e));
             this.set_status('erro')
-            debugger
+            if (!this.erro_reportado) {
+                debugger
+                alert("Não foi possível conectar no banco de dados, trabalhando apenas com cache local");
+                console.log(e);
+                this.erro_reportado = true;
+            }
         }
 
     }
@@ -137,7 +146,13 @@ export class FormStylingHandler {
                 new_v = await this.graphql_lista(
                     introspection_caminho
                 )
-            } catch (e) { console.log(e); debugger; throw e; }
+            } catch (e) {
+                console.log(e);
+                if (!this.erro_reportado) {
+                    alert("Não foi possível conectar no banco de dados, trabalhando apenas com cache local");
+                    this.erro_reportado = true;
+                }
+            }
 
             if (!new_v) {
                 console.log("estilo não encontrado, criando...");
@@ -155,7 +170,22 @@ export class FormStylingHandler {
                             introspection_caminho,
                         }
                     )
-                } catch (e) { console.log(e); debugger; throw e; }
+                } catch (e) {
+                    console.log(e); console.log(e);
+                    new_v = {
+                        bs_class_wrap: "",
+                        bs_class_label: "",
+                        bs_class_input: "",
+                        esconder: false,
+                        nao_usar: false,
+                        mask: "",
+                        introspection_caminho,
+                        __typename: "CampoFormEstilo",
+                        id: "",
+                        createdAt: "",
+                        updatedAt: ""
+                    } as CampoFormEstilo
+                }
 
             }
             this.style_state_as_Map.set(
@@ -300,7 +330,6 @@ export class FormStylingHandler {
         }
     }
 }
-
 
 export class FormsValidation {
 
