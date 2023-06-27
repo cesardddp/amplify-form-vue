@@ -26,6 +26,10 @@ import {
 import { vMaska } from "maska"
 
 import App from './AppToTest.vue'
+// import { Amplify } from "aws-amplify";
+// import awsconfig from "./aws-exports";
+
+// Amplify.configure(awsconfig);
 
 createApp(App)
     .use(TextBoxPlugin)

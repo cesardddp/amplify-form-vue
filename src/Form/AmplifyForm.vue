@@ -15,6 +15,12 @@ interface AmplifyForm {
 const props = defineProps<AmplifyForm>()
 const emits = defineEmits(['update:modelValue'])
 
+const validacao = new FormsValidation()
+defineExpose(
+    { validacao }
+)
+provide("validacao", validacao)
+
 const form_state_handler = new FormStateHandler(
     emits,
     reactive({ root: props.modelValue })
@@ -40,11 +46,6 @@ provide("form_state_handler", form_state_handler)
 provide("form_types", form_types)
 provide("form_styling_handler", new FormStylingHandler(props.form_id!, status_form_style.set_status))
 
-const validacao = new FormsValidation()
-defineExpose(
-    { validacao }
-)
-provide("validacao", validacao)
 
 
 // input_nome: form_types.keys().next().value, status_form_style,status

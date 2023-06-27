@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AmplifyFormVue from "../AmplifyForm.vue"
+import AmplifyForm from "../AmplifyForm.vue"
 import schema from "../../file_tests/schema_06_06.json";
 import Input from "../FormsElements/Input.vue";
 import { computed, ComputedRef, reactive, Ref, ref, shallowRef, watch, watchEffect } from "vue";
@@ -178,13 +178,14 @@ const vmodelteste = ref(testando.quem !== 'App' ? {} :
 )
 const validar = ref(false);
 function submit() {
-  alert(amplForm.value.validacao.validar())
+  alert(amplifyForm.value!.validacao.validar())
   // debugger
   alert(
-    amplForm.value.validacao.erros
+    amplifyForm.value!.validacao.erros
   )
 }
-const amplForm = ref()
+const amplifyForm = ref()
+// const amplifyForm = ref<InstanceType<typeof AmplifyForm>|null>(null)
 </script>
 <template>
   <!-- <input type="text" name="" v-model="vmodelteste.nome" id=""> -->
@@ -210,7 +211,7 @@ const amplForm = ref()
 
 
         <Suspense>
-          <AmplifyFormVue ref="amplForm"
+          <AmplifyFormVue ref="amplifyForm"
             v-bind="{ introspectionSchema: schema as IntrospectionSchema, entity_name: testando.quem, form_id: testando.id }"
             :key="testando.quem" v-model="vmodelteste"/>
           <template #fallback>

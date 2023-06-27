@@ -152,7 +152,12 @@ onMounted(() => {
                 data.value = null;
         })
     }
+    if (bs_classes.is_chave_estrangeira) {
+        const list = inject("list") as Function
+        list()
+    }
 });
+
 </script>
 <template>
     <!-- <input type="text" name="" id="" required> -->
@@ -162,9 +167,12 @@ onMounted(() => {
             <!-- {{ bs_classes }} -->
             <input :class="bs_class_input" v-model="data" :type='type' :id="introspect_caminho" :name="introspect_caminho"
                 :placeholder="placeholder ?? 'Insira ' + nome" :step="step" :disabled="disabled"
-                :required="validacao.validacoes.required && type!='checkbox'" :minlength="validacao.validacoes.minlength"
+                :required="validacao.validacoes.required && type != 'checkbox'" :minlength="validacao.validacoes.minlength"
                 :maxlength="validacao.validacoes.maxlength" data-bs-toggle="tooltip" :title="description" ref="this_input"
                 v-maska :data-maska="bs_classes.mask.value">
+            <select v-if="bs_classes.is_chave_estrangeira">
+                <option value=""></option>
+            </select>
 
             <label data-bs-toggle="popover" data-bs-trigger="hover" :class="bs_class_label" :for="introspect_caminho">{{
                 label }}</label>

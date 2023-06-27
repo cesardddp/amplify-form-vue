@@ -168,6 +168,7 @@ export class FormStylingHandler {
                             nao_usar: false,
                             mask: "",
                             introspection_caminho,
+                            is_chave_estrangeira: false,
                         }
                     )
                 } catch (e) {
@@ -325,7 +326,23 @@ export class FormStylingHandler {
                         this.style_state_as_Map.get(key)!.value
                     )
                 }
-            })
+            }),
+            is_chave_estrangeira: computed({
+                get: () => this.style_state_as_Map.get(key)!.value.is_chave_estrangeira,
+                set: async (value) => {
+                    this.style_state_as_Map.get(key)!.value = {
+                        ...this.style_state_as_Map.get(key)!.value,
+                        is_chave_estrangeira: value
+                    }
+                    await this.graphql_atualiza(
+                        this.style_state_as_Map.get(key)!.value
+                    )
+                    Cache.setItem(
+                        key,
+                        this.style_state_as_Map.get(key)!.value
+                    )
+                }
+            }),
 
         }
     }

@@ -31,6 +31,13 @@ syncfusion-license.txt
 
 /amplify/
 
+src/file_tests/mutations.ts
+src/file_tests/old_schema.json
+src/file_tests/queries.ts
+src/file_tests/schema_24_02_com_modulos_e_grupos.json
+src/file_tests/simple-schema.json
+src/file_tests/schema_06_06.json
+
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
 amplify/.config/local-*
@@ -52,9 +59,5 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
-src/file_tests/mutations.ts
-src/file_tests/old_schema.json
-src/file_tests/queries.ts
-src/file_tests/schema_24_02_com_modulos_e_grupos.json
-src/file_tests/simple-schema.json
-src/file_tests/schema_06_06.json
+src/aws-exports.ts
+vite.config.ts.timestamp-1686768290308-e1d89051e3e0f.mjs

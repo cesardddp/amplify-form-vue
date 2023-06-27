@@ -332,7 +332,7 @@ export default function (entity_name: string, introspectionSchema: Introspection
                 debuggMode && console.table(f);
 
                 if (scalar_type) {
-                    if (f.name === 'id') return;
+                    // if (f.name === 'id') return;
                     const form_component_info = getFormElementFromScalar(
                         f.name,
                         scalar_type,

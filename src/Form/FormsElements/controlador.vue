@@ -250,6 +250,10 @@ const ocultar = computed({
                 <label for="mask" class="form-label">Máscara</label>
             <input type="text" v-model="formStylingHandler.mask.value" name="mask">
         </div>
+        <div class="col">
+                <label for="if_fk" class="form-label">Chave Estrangeira</label>
+            <input type="text" v-model="formStylingHandler.chave_estrangeira.value" name="if_fk">
+        </div>
 
     </div>
     <label class="text-primary" > classe atual

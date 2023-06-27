@@ -85,6 +85,7 @@ onMounted(() => {
                 <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"
                     v-bind:introspect_caminho="`${introspection_caminho}.${form_field.nome}`">
                 </component>
+                
             </FormFieldEditor>
             <div v-else>
                 <component :is="form_field.form_component_info.is" v-bind="form_field.form_component_info.props"
