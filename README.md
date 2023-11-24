@@ -12,7 +12,7 @@
 Pacote instalavel para criar formulários e grid s de forma fácil baseado no 
 
 
-
+hi mama
 
 ## dicas pro eu do futuro como fazer pacote instalavel
 adicionei essa essas configs no vite.config.ts->`defineConfig` ao lado de `plugins`
